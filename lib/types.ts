@@ -41,6 +41,20 @@ export interface MenuItem {
   category: string
   image: string
   available: boolean
+  configuracionOpciones?: OptionConfig[]
+}
+
+export interface OptionConfig {
+  id: string
+  name: string
+  type: "radio" | "checkbox" | "number"
+  required: boolean
+  options: {
+    id: string
+    name: string
+    price: number
+  }[]
+  defaultSelection?: string
 }
 
 export interface MenuCategory {

@@ -1,12 +1,8 @@
 "use client"
-import type { MenuItem } from "@/lib/types"
-
-interface CartItem extends MenuItem {
-  quantity: number
-}
+import type { CartItemWithOptions } from "@/lib/cart-context"
 
 interface CartSidebarProps {
-  items: CartItem[]
+  items: CartItemWithOptions[]
   onRemove: (itemId: string) => void
   onQuantityChange: (itemId: string, quantity: number) => void
   onCheckout: () => void
@@ -18,7 +14,7 @@ export default function CartSidebar({ items, onRemove, onQuantityChange, onCheck
 
   return (
     <div className="bg-gray-50 p-6 rounded-lg h-fit sticky top-20 border border-gray-200">
-      <h2 className="text-2xl font-bold mb-4 text-blue-900">Carrito</h2>
+      <h2 className="text-2xl font-bold mb-4 text-[#1000a3]">Carrito</h2>
 
       {items.length === 0 ? (
         <p className="text-gray-500 text-center py-8">Tu carrito está vacío</p>
@@ -30,6 +26,9 @@ export default function CartSidebar({ items, onRemove, onQuantityChange, onCheck
                 <div className="flex-1">
                   <p className="font-semibold text-sm">{item.name}</p>
                   <p className="text-xs text-gray-600">S/. {item.price.toFixed(2)}</p>
+                  {Object.keys(item.selectedOptions).length > 0 && (
+                    <p className="text-xs text-gray-500">Con opciones personalizadas</p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -64,12 +63,12 @@ export default function CartSidebar({ items, onRemove, onQuantityChange, onCheck
             </div>
             <div className="border-t pt-3 flex justify-between">
               <span className="font-bold text-lg">Total:</span>
-              <span className="text-2xl font-bold text-blue-900">S/. {(total + 5).toFixed(2)}</span>
+              <span className="text-2xl font-bold text-[#1000a3]">S/. {(total + 5).toFixed(2)}</span>
             </div>
             <button
               onClick={onCheckout}
               disabled={isLoading}
-              className="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition disabled:opacity-50"
+              className="w-full bg-[#1000a3] text-white py-3 rounded-lg font-bold hover:bg-[#1008b6] transition disabled:opacity-50"
             >
               {isLoading ? "Procesando..." : "Confirmar Pedido"}
             </button>

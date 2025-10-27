@@ -4,13 +4,13 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Primary Colors - Vibrante y Marino */
-  --primary: oklch(0.45 0.25 260);
-  --primary-foreground: oklch(0.98 0 0);
+  /* Primary Colors - 200 Millas Exact Colors */
+  --primary: #1000a3;
+  --primary-foreground: #ffffff;
 
-  /* Accent Colors - Rojo y Naranja */
-  --accent-primary: oklch(0.55 0.28 15);
-  --accent-secondary: oklch(0.65 0.22 45);
+  /* Accent Colors - 200 Millas Yellow */
+  --accent-primary: #e2e200;
+  --accent-secondary: #e2e200;
 
   /* Neutrals */
   --background: oklch(0.98 0 0);
@@ -138,4 +138,35 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@keyframes scale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+@keyframes pulse-scale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes pulse-scale-strong {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.16); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes dot-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
+  30% { transform: translateY(-6px); opacity: 1; }
 }

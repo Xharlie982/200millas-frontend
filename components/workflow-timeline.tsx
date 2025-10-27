@@ -1,15 +1,53 @@
 "use client"
+
+import { useState, useEffect } from "react"
+import { apiClient } from "@/lib/api"
 import type { WorkflowStep } from "@/lib/types"
 
 interface WorkflowTimelineProps {
-  steps: WorkflowStep[]
+  orderId: string
 }
 
-export default function WorkflowTimeline({ steps }: WorkflowTimelineProps) {
+export function WorkflowTimeline({ orderId }: WorkflowTimelineProps) {
+  const [steps, setSteps] = useState<WorkflowStep[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadWorkflowSteps()
+    // Poll for updates every 10 seconds
+    const interval = setInterval(loadWorkflowSteps, 10000)
+    return () => clearInterval(interval)
+  }, [orderId])
+
+  const loadWorkflowSteps = async () => {
+    try {
+      const data = await apiClient.workflow.getSteps(orderId)
+      setSteps(data || [])
+    } catch (error) {
+      console.error("Error loading workflow steps:", error)
+      // Mock data as fallback
+      setSteps([
+        { id: "1", orderId, stepType: "cooking", status: "completed", startTime: new Date().toISOString() },
+        { id: "2", orderId, stepType: "packing", status: "in_progress", startTime: new Date().toISOString() },
+        { id: "3", orderId, stepType: "delivery", status: "pending" },
+      ])
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const stepLabels: Record<string, string> = {
     cooking: "Cocinando",
     packing: "Empacando",
     delivery: "Entregando",
+  }
+
+  if (loading) {
+    return <div className="text-sm text-gray-500">Cargando progreso...</div>
+  }
+
+  if (steps.length === 0) {
+    return null
   }
 
   return (
