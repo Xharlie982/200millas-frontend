@@ -11,6 +11,8 @@ import type { MenuItem, MenuCategory } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import ProductCard from "@/components/product-card"
+import { Search } from "lucide-react"
 
 export default function CartaPage() {
   const { addItem } = useCart()
@@ -113,10 +115,14 @@ export default function CartaPage() {
 
   const getCategoryIdByName = (name: string) => {
     const found = categories.find(c => c.name === name)
-    return found?.id ?? null
+    return found?.id
   }
 
   const activeCategoryName = orderedCategoryNames.find(n => (n === "Mostrar todo" ? selectedCategory === null : getCategoryIdByName(n) === selectedCategory)) || "Mostrar todo"
+
+  // Two fixed rows: first 8 chips ("Mostrar todo" to "Ceviches"), then remaining 9
+  const firstRow = orderedCategoryNames.slice(0, 8)
+  const secondRow = orderedCategoryNames.slice(8)
 
   return (
     <div className="min-h-screen bg-white">
@@ -129,67 +135,101 @@ export default function CartaPage() {
 
       <main className="max-w-7xl mx-auto px-4 py-4">
         {/* Title */}
-        <div className="mb-4 text-center">
+        <div className="mt-10 mb-8 text-center">
           <h2 className="text-3xl font-display font-bold text-[#1000a3]">Explora nuestra carta</h2>
         </div>
 
         {/* Chips Section */}
-        <section className="py-6 px-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 justify-items-center">
-            {orderedCategoryNames.map((name) => {
+        <section className="py-6 px-6 mb-0">
+          <div className="flex flex-col gap-3">
+            {/* Row 1: 8 chips */}
+            <div className="flex flex-nowrap justify-center gap-3 max-w-[1200px] mx-auto overflow-x-auto md:overflow-visible">
+              {firstRow.map((name) => {
               const isAll = name === "Mostrar todo"
               const id = isAll ? null : getCategoryIdByName(name)
               const isActive = isAll ? selectedCategory === null : selectedCategory === id
-              return (
-                <div key={name} className="relative overflow-visible inline-block">
-                  {/* Circular icon outside the chip, overlapped to the left only when active */}
-                  <div
-                    className={`absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-white border-2 border-[#1000a3] shadow transition-opacity duration-200 ease-in-out flex items-center justify-center z-20 ${
-                      isActive ? 'opacity-100' : 'opacity-0'
-                    }`}
-                  >
-                    <Image src="/favicon.ico" alt="200 Millas" width={28} height={28} />
-                  </div>
+                return (
+                  <div key={name} className={`relative overflow-visible inline-block ${isActive ? 'mx-5' : ''}`}>
+                  {/* Favicon directly, positioned where the circle was */}
+                  <Image
+                    src="/favicon.ico"
+                    alt="200 Millas"
+                    width={48}
+                    height={48}
+                    priority
+                    className={`absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/2 z-20 transition-opacity duration-200 ease-in-out ${isActive ? 'opacity-100' : 'opacity-0'}`}
+                  />
 
                   <label
                     onClick={() => setSelectedCategory(id)}
-                    className={`inline-flex items-center rounded-full cursor-pointer transition-all text-[18px] h-10 relative ${
-                      isActive ? "bg-[#1000a3] text-white" : "bg-[#e2e200] text-[#1000a3]"
-                    } ${isActive ? 'pl-[25px] pr-4 py-2' : 'px-4 py-2'}`}
+                      className={`inline-flex items-center rounded-full cursor-pointer transition-all duration-200 ease-in-out text-base h-10 relative whitespace-nowrap ${
+                        isActive
+                          ? "bg-[#1000a3] text-white"
+                          : "bg-[#e2e200] text-[#1000a3] hover:shadow-md"
+                      } ${isActive ? 'pl-[25px] pr-4 py-2' : 'px-5 py-2'}`}
                     style={{ minWidth: isActive ? 111 : 99 }}
                   >
                     <span className="font-display font-bold leading-none">{name}</span>
                   </label>
                 </div>
               )
-            })}
-          </div>
+              })}
+            </div>
 
-          {/* Search */}
-          <div className="mt-6 max-w-full md:max-w-[925.6px]">
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="Buscar por plato"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full md:w-[925.6px] h-12 bg-white pr-12 pl-4 text-base border rounded-md"
-              />
-              <svg
-                className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#1000a3]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+            {/* Row 2: 9 chips */}
+            <div className="flex flex-nowrap justify-center gap-3 max-w-[1200px] mx-auto overflow-x-auto md:overflow-visible">
+              {secondRow.map((name) => {
+                const isAll = name === "Mostrar todo"
+                const id = isAll ? null : getCategoryIdByName(name)
+                const isActive = isAll ? selectedCategory === null : selectedCategory === id
+                return (
+                  <div key={name} className={`relative overflow-visible inline-block ${isActive ? 'mx-5' : ''}`}>
+                    <Image
+                      src="/favicon.ico"
+                      alt="200 Millas"
+                      width={48}
+                      height={48}
+                      priority
+                      className={`absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/2 z-20 transition-opacity duration-200 ease-in-out ${isActive ? 'opacity-100' : 'opacity-0'}`}
+                    />
+
+                    <label
+                      onClick={() => setSelectedCategory(id)}
+                      className={`inline-flex items-center rounded-full cursor-pointer transition-all duration-200 ease-in-out text-base h-10 relative whitespace-nowrap ${
+                        isActive
+                          ? "bg-[#1000a3] text-white"
+                          : "bg-[#e2e200] text-[#1000a3] hover:shadow-md"
+                      } ${isActive ? 'pl-[25px] pr-4 py-2' : 'px-5 py-2'}`}
+                      style={{ minWidth: isActive ? 111 : 99 }}
+                    >
+                      <span className="font-display font-bold leading-none">{name}</span>
+                    </label>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Search (left-aligned under second row) */}
+            <div className="my-8 max-w-[1200px] mx-auto w-full">
+              <div className="relative w-[250px] md:w-[280px]">
+                <Input
+                  type="text"
+                  placeholder="Buscar por plato"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-12 bg-white pr-10 pl-4 text-base border rounded-md"
+                />
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" aria-hidden="true" />
+              </div>
             </div>
           </div>
+
+          
         </section>
 
         {/* Loading Screen */}
-        <div className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-700 ease-out ${loading ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm transition-opacity"></div>
+        <div className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-500 ease-out ${loading ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+          <div className={`absolute inset-0 bg-white/80 backdrop-blur-sm transition-opacity duration-500 ease-out ${loading ? 'opacity-100' : 'opacity-0'}`}></div>
           <div className="relative flex items-center space-x-6 animate-[float_6s_ease-in-out_infinite]">
             <div className="relative">
               <div className="absolute -inset-6 opacity-25">
@@ -203,7 +243,7 @@ export default function CartaPage() {
                 className="relative"
                 style={{
                   filter: 'none',
-                  animation: 'pulse-scale-strong 1.8s ease-in-out infinite'
+                  animation: 'pulse-scale-strong 1.6s ease-in-out infinite'
                 }}
               />
             </div>
@@ -219,40 +259,20 @@ export default function CartaPage() {
         </div>
 
         {/* Category heading (optional) */}
-        <div className="mt-2 mb-4">
-          <h3 className="text-[#1000a3] font-display text-[20px] mb-4">{activeCategoryName}</h3>
+        <div className="mt-6 mb-4 text-center">
+          <h3 className="text-[#1000a3] font-display font-bold text-[20px]">{activeCategoryName}</h3>
         </div>
 
         {/* Products */}
         <section className="pb-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredItems.length === 0 ? (
               <div className="col-span-full text-center py-12">
                 <p className="text-gray-500 text-lg">No se encontraron productos</p>
               </div>
             ) : (
               filteredItems.map((item) => (
-                <Card key={item.id} className="overflow-hidden hover:shadow-lg transition cursor-pointer">
-                  <div className="relative h-48 md:h-[240px]">
-                    <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
-                  </div>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-[#1000a3] text-xl md:text-2xl">{item.name}</CardTitle>
-                    <CardDescription className="text-sm md:text-base">{item.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-[#1000a3]">S/ {item.price.toFixed(2)}</span>
-                      <Button
-                        onClick={() => handleItemClick(item)}
-                        disabled={!item.available}
-                        className="bg-[#e2e200] text-[#1000a3] hover:bg-[#e2e200]/90 font-bold"
-                      >
-                        {item.configuracionOpciones && item.configuracionOpciones.length > 0 ? "Personalizar" : "Agregar"}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <ProductCard key={item.id} item={item} onClick={handleItemClick} />
               ))
             )}
           </div>
