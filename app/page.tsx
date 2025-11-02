@@ -55,6 +55,31 @@ export default function HomePage() {
         </section>
       </main>
       <CustomerFooter />
+
+      {/* Product Options Modal */}
+      {selectedItem && (
+        <ProductDetailModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false)
+            setSelectedItem(null)
+          }}
+          onAddToCart={handleAddToCart}
+          menuItem={selectedItem}
+        />
+      )}
+
+      {isModalOpen && (
+        <button 
+          onClick={() => {
+            setIsModalOpen(false)
+            setSelectedItem(null)
+          }}
+          className="fixed top-4 right-4 z-[9999] p-2 text-white opacity-90 transition-opacity hover:opacity-100"
+        >
+          <X className="h-10 w-10" />
+        </button>
+      )}
     </div>
   )
 }

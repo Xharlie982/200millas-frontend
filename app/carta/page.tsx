@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import ProductCard from "@/components/product-card"
 import { Search } from "lucide-react"
+import { X } from "lucide-react"
 
 export default function CartaPage() {
   const { addItem } = useCart()
@@ -69,12 +70,12 @@ export default function CartaPage() {
       setItems(data)
     } catch (error) {
       const mock: MenuItem[] = [
-        { id: "p1", name: "Promo Doble Trío Pescado", description: "2 porciones + bebida", price: 46.9, image: "/promo-doble-trio-pescado.jpg", available: true, categoryId: "1" },
-        { id: "p2", name: "Ceviche Clásico", description: "Fresco del día", price: 29.9, image: "/ceviche-clasico.jpg", available: true, categoryId: "7" },
-        { id: "p3", name: "Mostrimar Especial", description: "Plato marino mixto", price: 39.9, image: "/mostrimar.jpg", available: true, categoryId: "9" },
-        { id: "p4", name: "Leche de Tigre Clásica", description: "250ml", price: 14.9, image: "/leche-de-tigre-postres.jpg", available: true, categoryId: "6" },
+        { id: "p1", name: "Promo Doble Trío Pescado", description: "2 porciones + bebida", price: 46.9, image: "/promo-doble-trio-pescado.jpg", available: true, category: "1" },
+        { id: "p2", name: "Ceviche Clásico", description: "Fresco del día", price: 29.9, image: "/ceviche-clasico.jpg", available: true, category: "7" },
+        { id: "p3", name: "Mostrimar Especial", description: "Plato marino mixto", price: 39.9, image: "/mostrimar.png", available: true, category: "9" },
+        { id: "p4", name: "Leche de Tigre Clásica", description: "250ml", price: 14.9, image: "/leche-de-tigre-postres.jpg", available: true, category: "6" },
       ]
-      setItems(categoryId ? mock.filter(m => m.categoryId === categoryId) : mock)
+      setItems(categoryId ? mock.filter(m => m.category === categoryId) : mock)
     }
   }
 
@@ -292,7 +293,18 @@ export default function CartaPage() {
           menuItem={selectedItem}
         />
       )}
+
+      {isModalOpen && (
+        <button 
+          onClick={() => {
+            setIsModalOpen(false);
+            setSelectedItem(null);
+          }}
+          className="fixed top-4 right-4 z-[9999] p-2 text-white opacity-90 transition-opacity hover:opacity-100"
+        >
+          <X className="h-10 w-10" />
+        </button>
+      )}
     </div>
   )
 }
-

@@ -6,7 +6,7 @@ import { Minus, Plus, X } from "lucide-react"
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogOverlay, DialogTitle, DialogClose } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogOverlay, DialogTitle } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { CartItemWithOptions, SelectedOptionsByGroup } from "@/lib/cart-context"
 
@@ -41,6 +41,7 @@ interface ProductDetailModalProps {
 }
 
 type SelectedOptions = Record<string, Record<string, number>>
+
 
 const formatCurrency = (value: number) => `S/ ${value.toFixed(2)}`
 
@@ -106,7 +107,7 @@ export default function ProductDetailModal({
       image: menuItem.image,
       quantity,
       basePrice: menuItem.price,
-      selectedOptions: {} as SelectedOptionsByGroup, // Placeholder for full implementation
+      selectedOptions: {} as SelectedOptionsByGroup,
     }
     onAddToCart(cartItem)
     onClose()
@@ -115,11 +116,8 @@ export default function ProductDetailModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogOverlay className="bg-black/80" />
-      <DialogContent className="w-[85vw] max-w-none h-[85vh] bg-[#FDFDFD] rounded-2xl p-0 border-none overflow-hidden">
+      <DialogContent showCloseButton={false} className="w-[85vw] max-w-none h-[85vh] bg-[#FDFDFD] rounded-2xl p-0 border-none overflow-hidden">
         <div className="relative h-full">
-          
-          {/* EL BOTÓN AZUL INTERNO HA SIDO ELIMINADO DE AQUÍ */}
-
           <div className="grid grid-cols-1 sm:grid-cols-[600px_1fr] h-full">
             {/* Left Column: Image */}
             <div className="relative h-full w-full min-h-[400px] md:min-h-0">
@@ -207,19 +205,11 @@ export default function ProductDetailModal({
 
               {/* Fixed Footer */}
               <div className="mt-auto p-5 border-t border-gray-200 bg-white rounded-b-2xl">
-    
-                {/* NUEVO LAYOUT DE UNA FILA */}
                 <div className="flex justify-between items-center gap-4">
-                
-                  {/* Item 1: Precio Base */}
                   <span className="text-lg font-medium text-gray-700 whitespace-nowrap">
                     Precio base: {formatCurrency(menuItem.price)}
                   </span>
-                  
-                  {/* Item 2: Wrapper para Cantidad + Botón */}
                   <div className="flex items-center gap-4">
-                    
-                    {/* Quantity Selector */}
                     <div className="flex items-center gap-2">
                       <Button variant="outline" size="icon" className="rounded-full h-10 w-10" onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
                         <Minus className="h-4 w-4" />
@@ -229,15 +219,12 @@ export default function ProductDetailModal({
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                    
-                    {/* Add to Cart Button */}
                     <Button
                       className="bg-[#1000a3] text-white font-bold text-lg h-12 flex-grow"
                       onClick={handleAddToCartClick}
                     >
                       Agregar ({formatCurrency(totalPrice)})
                     </Button>
-
                   </div>
                 </div>
               </div>
@@ -245,13 +232,6 @@ export default function ProductDetailModal({
           </div>
         </div>
       </DialogContent>
-
-      <DialogClose asChild>
-        <button className="absolute top-4 right-4 z-50 p-2 text-white opacity-90 transition-opacity hover:opacity-100">
-          <X className="h-10 w-10" /> {/* Icono más grande para coincidir con la referencia */}
-        </button>
-      </DialogClose>
-
     </Dialog>
   )
 }
