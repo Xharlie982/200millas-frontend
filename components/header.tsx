@@ -3,14 +3,18 @@
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { LogOut, Menu, X } from "lucide-react"
+import { LogOut, Menu, ShoppingCart, X } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useCart } from "@/lib/cart-context"
 
 export default function Header() {
   const { user, logout, isAuthenticated } = useAuth()
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
+  const { getItemCount } = useCart()
+  const cartItemCount = getItemCount()
+  const iconSize = "h-7 w-7";
 
   const handleLogout = async () => {
     await logout()
@@ -49,6 +53,24 @@ export default function Header() {
 
           {/* User Info and Logout */}
           <div className="hidden md:flex gap-4 items-center">
+            {cartItemCount === 0 ? (
+              // ESTADO VACÍO (Icono AZUL, con cursor)
+              <button
+                className="relative cursor-pointer rounded-full p-2 text-[#1000a3] transition-all"
+                aria-label="Ver carrito (vacío)"
+              >
+                <ShoppingCart className={iconSize} />
+              </button>
+            ) : (
+              // ESTADO CON ITEMS (Caja AMARILLA, Icono AZUL, con cursor)
+              <button
+                className="relative cursor-pointer rounded-md bg-[#e2e200] px-2 py-1 flex items-center gap-1 text-[#1000a3] transition-all"
+                aria-label={`Ver carrito (${cartItemCount} items)`}
+              >
+                <ShoppingCart className={iconSize} />
+                <span className="text-base font-bold">{cartItemCount}</span>
+              </button>
+            )}
             <div className="text-right">
               <p className="text-sm font-medium">{user?.name || "Trabajador"}</p>
               <p className="text-xs text-blue-100">{user?.role || "Rol"}</p>

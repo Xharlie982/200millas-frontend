@@ -19,10 +19,11 @@ import { Button } from "@/components/ui/button"
 import CartSidebar from "@/components/cart-sidebar"
 
 export default function CustomerHeader() {
-  const { items, removeItem, updateQuantity, clearCart, getTotal } = useCart()
+  const { items, removeItem, updateQuantity, clearCart, getTotal, getItemCount } = useCart()
   const { isAuthenticated, user, logout } = useAuth()
   const [isCartOpen, setIsCartOpen] = useState(false)
   const pathname = usePathname()
+  const iconSize = "h-7 w-7";
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
@@ -111,22 +112,20 @@ export default function CustomerHeader() {
             {/* Cart button */}
             <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
               <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="relative text-white hover:text-[#e2e200] cursor-pointer"
-                  style={{
-                    padding: '2px',
-                    transform: 'scale(2)',
-                    backgroundColor: 'transparent'
-                  }}
+                <button
+                  type="button"
+                  aria-label="Abrir carrito"
+                  className="p-2 cursor-pointer"
                 >
-                  <ShoppingCart size={128} strokeWidth={3} />
-                  {items.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-[#e2e200] text-[#1000a3] text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center" style={{ transform: 'scale(0.5)' }}>
-                      {items.length}
-                    </span>
+                  {getItemCount() === 0 ? (
+                    <ShoppingCart className={`${iconSize} text-white`} />
+                  ) : (
+                    <div className="flex items-center gap-1 rounded-md bg-[#e2e200] px-2 py-1">
+                      <ShoppingCart className={`${iconSize} text-[#1000a3]`} />
+                      <span className="font-bold text-[#1000a3]">{getItemCount()}</span>
+                    </div>
                   )}
-                </Button>
+                </button>
               </SheetTrigger>
               <SheetContent side="right" className="w-full sm:w-96">
                 <SheetHeader>
@@ -173,4 +172,5 @@ export default function CustomerHeader() {
     </header>
   )
 }
+
 

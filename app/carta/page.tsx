@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import CustomerHeader from "@/components/customer-header"
 import CustomerFooter from "@/components/customer-footer"
-import ProductOptionsModal from "@/components/product-options-modal"
+import ProductDetailModal from "@/components/ProductDetailModal"
 import { useCart } from "@/lib/cart-context"
 import { apiClient } from "@/lib/api"
 import type { MenuItem, MenuCategory } from "@/lib/types"
@@ -125,7 +125,7 @@ export default function CartaPage() {
   const secondRow = orderedCategoryNames.slice(8)
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen overflow-x-hidden bg-white">
       <CustomerHeader />
 
       {/* Hero full-bleed edge-to-edge */}
@@ -282,11 +282,11 @@ export default function CartaPage() {
 
       {/* Product Options Modal */}
       {selectedItem && (
-        <ProductOptionsModal
+        <ProductDetailModal
           isOpen={isModalOpen}
           onClose={() => {
-            setIsModalOpen(false)
-            setSelectedItem(null)
+            setIsModalOpen(false);
+            setSelectedItem(null);
           }}
           onAddToCart={handleAddToCart}
           menuItem={selectedItem}
