@@ -6,7 +6,7 @@ import { Minus, Plus, X } from "lucide-react"
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogOverlay, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogOverlay, DialogTitle, DialogClose } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { CartItemWithOptions, SelectedOptionsByGroup } from "@/lib/cart-context"
 
@@ -45,12 +45,7 @@ type SelectedOptions = Record<string, Record<string, number>>
 
 const formatCurrency = (value: number) => `S/ ${value.toFixed(2)}`
 
-export default function ProductDetailModal({
-  isOpen,
-  onClose,
-  onAddToCart,
-  menuItem,
-}: ProductDetailModalProps) {
+export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: ProductDetailModalProps) {
   const [quantity, setQuantity] = useState(1)
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>({})
   const [imageLoading, setImageLoading] = useState(true)
@@ -113,10 +108,32 @@ export default function ProductDetailModal({
     onClose()
   }
 
+  if (!menuItem) return null
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogOverlay className="bg-black/80" />
-      <DialogContent showCloseButton={false} className="w-[85vw] max-w-none h-[85vh] bg-[#FDFDFD] rounded-2xl p-0 border-none overflow-hidden">
+      <DialogContent showCloseButton={false} className="w-[85vw] max-w-none h-[85vh] bg-[#FDFDFD] rounded-2xl p-0 border-none">
+        <DialogClose asChild>
+          <button
+            className="absolute -top-2 -right-20 z-50 flex h-12 w-12 items-center justify-center rounded-lg text-white opacity-90 transition-opacity hover:opacity-100 cursor-pointer"
+            aria-label="Cerrar modal"
+            style={{ cursor: 'pointer' }}
+          >
+            <svg
+              className="h-8 w-8 text-white"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </DialogClose>
         <div className="relative h-full">
           <div className="grid grid-cols-1 sm:grid-cols-[600px_1fr] h-full">
             {/* Left Column: Image */}
@@ -211,16 +228,16 @@ export default function ProductDetailModal({
                   </span>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="icon" className="rounded-full h-10 w-10" onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
+                      <Button variant="outline" size="icon" className="rounded-full h-10 w-10 cursor-pointer" onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
                         <Minus className="h-4 w-4" />
                       </Button>
                       <span className="text-xl font-bold w-10 text-center">{quantity}</span>
-                      <Button variant="outline" size="icon" className="rounded-full h-10 w-10" onClick={() => setQuantity((q) => q + 1)}>
+                      <Button variant="outline" size="icon" className="rounded-full h-10 w-10 cursor-pointer" onClick={() => setQuantity((q) => q + 1)}>
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
                     <Button
-                      className="bg-[#1000a3] text-white font-bold text-lg h-12 flex-grow"
+                      className="bg-[#1000a3] text-white font-bold text-lg h-12 flex-grow cursor-pointer"
                       onClick={handleAddToCartClick}
                     >
                       Agregar ({formatCurrency(totalPrice)})

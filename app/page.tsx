@@ -1,16 +1,37 @@
+"use client"
+
+import { useState } from "react"
 import Hero from "@/components/hero"
 import MenuCategories from "@/components/menu-categories"
 import CustomerHeader from "@/components/customer-header"
 import CustomerFooter from "@/components/customer-footer"
 import Image from "next/image"
+import { ProductDetailModal } from "@/components/ProductDetailModal"
+import { useCart } from "@/lib/cart-context"
+import type { MenuItem, CartItemWithOptions } from "@/lib/types"
 
 export default function HomePage() {
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { addItem } = useCart()
+
+  const handleOpenModal = (menuItem: MenuItem) => {
+    setSelectedItem(menuItem)
+    setIsModalOpen(true)
+  }
+
+  const handleAddToCart = (item: CartItemWithOptions) => {
+    addItem(item)
+    setIsModalOpen(false)
+    setSelectedItem(null)
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <CustomerHeader />
       <main>
         <Hero />
-        <MenuCategories />
+        <MenuCategories onSelectItem={handleOpenModal} />
 
         {/* Sección Nosotros */}
         <section className="py-6 px-6">
@@ -57,28 +78,13 @@ export default function HomePage() {
       <CustomerFooter />
 
       {/* Product Options Modal */}
-      {selectedItem && (
+      {isModalOpen && selectedItem && (
         <ProductDetailModal
           isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false)
-            setSelectedItem(null)
-          }}
-          onAddToCart={handleAddToCart}
+          onClose={() => setIsModalOpen(false)}
           menuItem={selectedItem}
+          onAddToCart={handleAddToCart}
         />
-      )}
-
-      {isModalOpen && (
-        <button 
-          onClick={() => {
-            setIsModalOpen(false)
-            setSelectedItem(null)
-          }}
-          className="fixed top-4 right-4 z-[9999] p-2 text-white opacity-90 transition-opacity hover:opacity-100"
-        >
-          <X className="h-10 w-10" />
-        </button>
       )}
     </div>
   )

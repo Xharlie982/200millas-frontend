@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import CustomerHeader from "@/components/customer-header"
 import CustomerFooter from "@/components/customer-footer"
-import ProductDetailModal from "@/components/ProductDetailModal"
+import { ProductDetailModal } from "@/components/ProductDetailModal"
 import { useCart } from "@/lib/cart-context"
 import { apiClient } from "@/lib/api"
 import type { MenuItem, MenuCategory } from "@/lib/types"
@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import ProductCard from "@/components/product-card"
 import { Search } from "lucide-react"
-import { X } from "lucide-react"
 
 export default function CartaPage() {
   const { addItem } = useCart()
@@ -292,18 +291,6 @@ export default function CartaPage() {
           onAddToCart={handleAddToCart}
           menuItem={selectedItem}
         />
-      )}
-
-      {isModalOpen && (
-        <button 
-          onClick={() => {
-            setIsModalOpen(false);
-            setSelectedItem(null);
-          }}
-          className="fixed top-4 right-4 z-[9999] p-2 text-white opacity-90 transition-opacity hover:opacity-100"
-        >
-          <X className="h-10 w-10" />
-        </button>
       )}
     </div>
   )
