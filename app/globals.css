@@ -173,3 +173,9 @@
   0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
   30% { transform: translateY(-6px); opacity: 1; }
 }
+
+/* Hide the default clear button on search inputs */
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}

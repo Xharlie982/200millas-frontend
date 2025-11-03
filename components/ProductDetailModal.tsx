@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogOverlay, DialogTitle, DialogClose } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { CartItemWithOptions, SelectedOptionsByGroup } from "@/lib/cart-context"
+import { formatCurrency } from "@/lib/utils"
 
 interface OptionChoice {
   id: string
@@ -42,8 +43,6 @@ interface ProductDetailModalProps {
 
 type SelectedOptions = Record<string, Record<string, number>>
 
-
-const formatCurrency = (value: number) => `S/ ${value.toFixed(2)}`
 
 export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: ProductDetailModalProps) {
   const [quantity, setQuantity] = useState(1)
@@ -121,7 +120,7 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
             style={{ cursor: 'pointer' }}
           >
             <svg
-              className="h-8 w-8 text-white"
+              className="h-10 w-10 text-white"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"

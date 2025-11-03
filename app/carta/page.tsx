@@ -11,8 +11,9 @@ import type { MenuItem, MenuCategory } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import ProductCard from "@/components/product-card"
-import { Search } from "lucide-react"
+import { ProductCard } from "@/components/product-card"
+import { Search, X } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function CartaPage() {
   const { addItem } = useCart()
@@ -210,16 +211,22 @@ export default function CartaPage() {
             </div>
 
             {/* Search (left-aligned under second row) */}
-            <div className="my-8 max-w-[1200px] mx-auto w-full">
-              <div className="relative w-[250px] md:w-[280px]">
-                <Input
-                  type="text"
-                  placeholder="Buscar por plato"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-12 bg-white pr-10 pl-4 text-base border rounded-md"
-                />
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" aria-hidden="true" />
+            <div className="my-8 w-full max-w-[280px] relative">
+              <Input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar por plato"
+                className="w-full h-12 rounded-lg py-2 pl-5 pr-12 border border-gray-300 focus:border-blue-500 focus:ring-blue-500 cursor-pointer"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-4">
+                {searchQuery ? (
+                  <button onClick={() => setSearchQuery("")} className="text-gray-500 hover:text-gray-800 cursor-pointer">
+                    <X className="h-5 w-5" />
+                  </button>
+                ) : (
+                  <Search className="h-5 w-5 text-gray-400" />
+                )}
               </div>
             </div>
           </div>
@@ -259,23 +266,27 @@ export default function CartaPage() {
         </div>
 
         {/* Category heading (optional) */}
-        <div className="mt-6 mb-4 text-center">
+        <div className="mt-2 mb-8 text-center">
           <h3 className="text-[#1000a3] font-display font-bold text-[20px]">{activeCategoryName}</h3>
         </div>
 
         {/* Products */}
         <section className="pb-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredItems.length === 0 ? (
-              <div className="col-span-full text-center py-12">
-                <p className="text-gray-500 text-lg">No se encontraron productos</p>
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <Skeleton key={index} className="h-64" />
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredItems.map((item) => (
+                  <ProductCard key={item.id} menuItem={item} onSelect={() => handleItemClick(item)} />
+                ))}
               </div>
-            ) : (
-              filteredItems.map((item) => (
-                <ProductCard key={item.id} item={item} onClick={handleItemClick} />
-              ))
-            )}
-          </div>
+            </>
+          )}
         </section>
       </main>
       <CustomerFooter />
