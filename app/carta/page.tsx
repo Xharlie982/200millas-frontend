@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import Image from "next/image"
 import CustomerHeader from "@/components/customer-header"
 import CustomerFooter from "@/components/customer-footer"
@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ProductCard } from "@/components/product-card"
 import { Search, X } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { SimpleToast } from "@/components/ui/simple-toast"
 
 export default function CartaPage() {
   const { addItem } = useCart()
@@ -25,6 +26,7 @@ export default function CartaPage() {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   useEffect(() => {
     loadCategories()
@@ -70,22 +72,143 @@ export default function CartaPage() {
       setItems(data)
     } catch (error) {
       const mock: MenuItem[] = [
-        { id: "p1", name: "Promo Doble Trío Pescado", description: "2 porciones + bebida", price: 46.9, image: "/promo-doble-trio-pescado.jpg", available: true, category: "1" },
-        { id: "p2", name: "Ceviche Clásico", description: "Fresco del día", price: 29.9, image: "/ceviche-clasico.jpg", available: true, category: "7" },
-        { id: "p3", name: "Mostrimar Especial", description: "Plato marino mixto", price: 39.9, image: "/mostrimar.png", available: true, category: "9" },
-        { id: "p4", name: "Leche de Tigre Clásica", description: "250ml", price: 14.9, image: "/leche-de-tigre-postres.jpg", available: true, category: "6" },
+        // Promos Fast (category: "1")
+        { id: "p1", name: "Promo Familiar Cevichero 4", description: "2 Ceviches clasicos + 1 Chicharron Pescado+ Arroz con mariscos + 2 porciones de yucas + 4 Chichas 12 Onz. Promocion solo valida por web y tamaño regular", price: 69.90, image: "/PF1.png", available: true, category: "1" },
+        { id: "p2", name: "Promo familiar Marino 3", description: "1 Trio clasico+ 1 Duo Tradicional + Arroz con mariscos + 3 Chichas 12 Onz. Promocion solo valida por web y tamaño regular", price: 64.9, image: "/PFM3.png", available: true, category: "1" },
+        { id: "p3", name: "Promo Ronda Marina Mixta", description: "Ceviche de pescado + Chicharron de Pescado + Arroz con Mariscos + Chaufa de Mariscos + Causa + 2 Chichas de 12 Onz. Promocion valida solo en web. Imagenes referenciales.", price: 49.9, image: "/PRMM.png", available: true, category: "1" },
+        { id: "p4", name: "Promo Megamarino Power", description: "Chicharron de pescado, pota y langostinos + Chaufa de mariscos + Papas fritas + 2 chilcanos. Promocion solo valida en la web.", price: 39.9, image: "/PMP.png", available: true, category: "1" },
+        { id: "p5", name: "Promo Duo Clasico", description: "Ceviche de Pescado + Chicharron de Pota. Promocion solo valida por web y tamaño regular", price: 21.9, image: "/PDC.png", available: true, category: "1" },
+        { id: "p6", name: "Promo Trio Clasico", description: "Ceviche de Pescado + Arroz con Mariscos + Chicharron de Pota. Promocion solo valida por web y tamaño regular. Imagen referencial", price: 23.9, image: "/PTC.png", available: true, category: "1" },
+        
+        // Express (category: "2")
+        { id: "e1", name: "Express Chaufero", description: "Nuggets de pescado + chufa de mariscos + papas fritas", price: 13.99, image: "/ExpressChaufero.png", available: true, category: "2" },
+        { id: "e2", name: "Express Marino", description: "Nuggets de pescado + Arroz Blanco + Sarza criolla", price: 10.9, image: "/ExpressMarino.png", available: true, category: "2" },
+        { id: "e3", name: "Cono Pez", description: "Chicharron de pescado + Papas fritas + Chicha 12 Onz", price: 16.9, image: "/ConoPez.png", available: true, category: "2" },
+
+        // Promociones (category: "3")
+        { id: "pr1", name: "Promo Tradicional", description: "Ceviche de pescado + Chicharron de pot + 4 yuquitas + Chicha 12 oz. Elige entre Regular o Extremo. Imagenes referenciales.", price: 28.9, image: "/PromoTradicional.png", available: true, category: "3" },
+        { id: "pr2", name: "Promo Pescado", description: "Ceviche de Pescado + Chicharron de pescado + 4 yuquitas + Chicha 12 oz. Elige entre Regular o Extremo. Imagenes referenciales.", price: 29.9, image: "/PromoPescado.png", available: true, category: "3" },
+        { id: "pr3", name: "Menu Puerto Duo", description: "Ceviche de Pescado + Chicharron de Pescado", price: 18.9, image: "/MPD.png", available: true, category: "3" },
+        { id: "pr4", name: "Promo Vaso Pota Extremo", description: "Leche de tigre con trozos de pota + Chicharron de pota regular + Chicha 12 oz. Imagenes referenciales.", price: 23.9, image: "/PVPE.png", available: true, category: "3" },
+        { id: "pr5", name: "2x1 Vaso Puerto Regular", description: "2 Leches de Tigre clasico + 2 Chichas de 12 Onz. Elige regular o extremo. Imagenes referenciales.", price: 29.9, image: "/2x1VPR.png", available: true, category: "3" },
+        { id: "pr6", name: "Promo Vaso Pota Regular", description: "Leche de tigre con trozos de pota + Chicharron de pota regular + Chicha 12 oz. Imagenes referenciales.", price: 19.9, image: "/PVPR.png", available: true, category: "3" },
+        { id: "pr7", name: "Promo Cevichera", description: "Ceviche de pescado + chicharron de pota y pescado regular + Chicha 12 oz. Elige Regular o Extremo. Imagenes referenciales.", price: 29.9, image: "/PromoCevichera.png", available: true, category: "3" },
+        { id: "pr8", name: "Menu Puerto Bowl", description: "Bowl de chaufa 16 Onz + Chicharron Clasico", price: 16.9, image: "/MPB.png", available: true, category: "3" },
+        { id: "pr9", name: "Promo Combo del Tigre", description: "Chicharron de pota + yuquitas fritas + chifles + canchita + leche de tigre pescado regular. Gratis chilcano (solo valido en Lima)", price: 15.90, image: "/PCTigre.png", available: false, category: "3" },
+        
+        // Sopas Power (category: "4")
+        { id: "sp1", name: "Combo Chilcano", description: "Sopa Chilcano + mini bowl arrocero a elegir + Chicha 9 oz + shot leche de tigre. Imagenes Referenciales", price: 21.9, image: "/ComboChilcano.png", available: true, category: "4" },
+        { id: "sp2", name: "Combo Sudado", description: "Sopa Sudado de pescado + 1 mini bowl arrocero a elegir + 1 Chicha 9 oz + Shot leche de tigre. Imagenes referenciales", price: 24.9, image: "/ComboSudado.png", available: true, category: "4" },
+        { id: "sp3", name: "Combo Chupe", description: "Sopa Chupe de pescado + 1 mini bowl arrocero a elegir + 1 Chicha 9 oz + shot de leche de tigre. Imagenes Referenciales", price: 26.9, image: "/ComboChupe.png", available: true, category: "4" },
+        
+        // Bowls Del Tigre (category: "5")
+        { id: "bdt1", name: "Bowl Arrocero Langostinos", description: "Bowl de arroz chaufa con mariscos y langostinos + Chicharron de Pescado.", price: 21.9, image: "/BAL.png", available: true, category: "5" },
+        { id: "bdt2", name: "Bowl Arrocero Clasico", description: "Bowl de arroz chaufa con mariscos + Chicharron de Pescado y Pota.", price: 17.9, image: "/BAC.png", available: true, category: "5" },
+        { id: "bdt3", name: "Bowl del tigre Clasico", description: "Bowl 24 oz de arroz chaufa con mariscos + Chicharron de Pota + Leche de tigre de pota regular. Imagenes referenciales.", price: 23.99, image: "/BdtC.png", available: true, category: "5" },
+        { id: "bdt4", name: "Bowl Arroz Chaufa con Mariscos", description: "Arroz Chaufa con Mariscos de 24 Oz. Imagen referencial.", price: 19.9, image: "/BALCM.png", available: true, category: "5" },
+        { id: "bdt5", name: "Bowl Arrocero Pescado", description: "Bowl de arroz chaufa con mariscos + Chicharron de Pescado.", price: 19.9, image: "/BAP.png", available: true, category: "5" },
+        { id: "bdt6", name: "Bowl del tigre Pescado", description: "Bowl 24 oz de arroz chaufa con mariscos + Chicharron de pescado + Leche de tigre de pota regular.", price: 25.9, image: "/BdtP.png", available: true, category: "5" },
+        { id: "bdt7", name: "Bowl del tigre Langostinos", description: "Bowl 24 oz de arroz chaufa con mariscos + Chicharron de Langostinos + Leche de tigre de pescado", price: 27.9, image: "/BdtL.png", available: true, category: "5" },
+        { id: "bdt8", name: "Bowl Arroz con Mariscos", description: "Arroz con Mariscos 24 Oz. Imagen referencial.", price: 21.9, image: "/BALAMM.png", available: true, category: "5" },
+
+        // Leche de Tigre (category: "6")
+        { id: "ldt1", name: "Leche de Tigre Pescado", description: "Leche de Tigre con trozos de Pescado + Chicharron pota. Elige entre Regular o Extremo. Imagenes referenciales.", price: 15.9, image: "/LdTP.png", available: true, category: "6" },
+        { id: "ldt2", name: "Leche de Tigre Langostino", description: "Leche de Tigre con Langostinos + Piqueo de chicharron de pota. Elige el tamaño que prefieras. Imagenes referenciales.", price: 18.9, image: "/LdTL.png", available: true, category: "6" },
+        { id: "ldt3", name: "Leche de Tigre Mixto", description: "Leche de Tigre con trozos de Pota, Pescado y Langostinos + Piqueo de chicharron de pota. Elige el tamaño que prefieras. Imagenes referenciales.", price: 17.9, image: "/LdTM.png", available: true, category: "6" },
+        { id: "ldt4", name: "Leche de Tigre Clasico", description: "Leche de Tigre con trozos de pota + Piqueo de chicharron de pota. Elige el tamaño que prefieras. Imagenes referenciales.", price: 14.9, image: "/LdTC.png", available: true, category: "6" },
+
+        // Ceviches (category: "7")
+        { id: "cev1", name: "Causa Acevichada", description: "Causa de papa amarilla rellena con trozos de pota y tartara, bañada con ceviche de pescado", price: 19.9, image: "/CausaAcevichada.png", available: true, category: "7" },
+        { id: "cev2", name: "Ceviche Pescado + Inca Kola + Chilcano Gratis", description: "Ceviche de Pescado. Elige entre Regular o Extremo. Incluye bebida Inca Kola 300ml y 1 chilcano gratis. Imagenes referenciales.", price: 24.9, image: "/CevichePescado1.png", available: true, category: "7" },
+        { id: "cev3", name: "Ceviche Mixto + Inca Kola + Chilcano Gratis", description: "Ceviche de pota + Pescado + Langostinos. Elige entre Regular o Extremo. Incluye bebida Inca Kola 300ml y 1 chilcano gratis. Imagenes referenciales.", price: 27.9, image: "/CevichePescado2.png", available: true, category: "7" },
+        
+        // Fritazo (category: "8")
+        { id: "fr1", name: "Fritazo Marino", description: "Milanesa de pescado + Arroz blanco + Yuquitas+ Sarza criolla + Chilcano", price: 18.9, image: "/FM.png", available: true, category: "8" },
+        { id: "fr2", name: "Fritazo Milanesa", description: "Milanesa de pescado + papas fritas + Arroz blanco + Sarza criolla + Chilcano", price: 16.9, image: "/FritazodeMilanesa.png", available: true, category: "8" },
+        { id: "fr3", name: "Fritazo Chaufa", description: "Milanesa de pescado + Arroz chaufa+ Papas fritas + Sarza criolla + Chilcano. Imagen referencial.", price: 23.9, image: "/FritazoChaufa.png", available: true, category: "8" },
+
+        // Mostrimar (category: "9")
+        { id: "mos1", name: "Mostrimar Teriyaki", description: "Chicharron de pescado teriyaki + Papas fritas + Chaufa de mariscos + chilcano", price: 20.9, image: "/MT.png", available: true, category: "9" },
+        { id: "mos2", name: "Mostrimar Clasico", description: "Chicharron de pota + Papas fritas + Chaufa de mariscos + chilcano", price: 20.9, image: "/MC.png", available: true, category: "9" },
+        { id: "mos3", name: "Mostrimar Royal", description: "Chicharron de pescado + Papas fritas + Chaufa de mariscos + Huevo frito + Chilcano", price: 22.9, image: "/MostrimarRoyal.png", available: true, category: "9" },
+        
+        // Box Marino (category: "10")
+        { id: "bm1", name: "Puerto Box Power", description: "Chicharron de pescado + Papas fritas + Chilcano. Gratis salsa acevichada. Imagen referencial.", price: 18.9, image: "/PBP.png", available: true, category: "10" },
+        { id: "bm2", name: "Combo del Tigre", description: "Leche de tigre pescado +Chicharron de Pota + Yuquitas fritas + Chifles + Canchita + Chilcano Gratis (Solo en Salon)", price: 21.9, image: "/CombodelTigre.png", available: true, category: "10" },
+        { id: "bm3", name: "Puerto Box Super", description: "Chicharron de pescado + Papas fritas + Leche de tigre Pota regular + Chilcano. Gratis salsa acevichada. Imagen referencial.", price: 25.9, image: "/PBS.png", available: true, category: "10" },
+        { id: "bm4", name: "Puerto Box Clasico", description: "Chicharron de pescado + Papas fritas. Gratis salsa acevichada. Imagen referencial.", price: 15.9, image: "/PBC.png", available: true, category: "10" },
+
+        // Duos Marinos (category: "11")
+        { id: "dm1", name: "Duo Clasico", description: "Ceviche de Pescado + Chicharron de Pota. Elige entre Regular o Extremo. Imagenes referenciales.", price: 23.9, image: "/DC.png", available: true, category: "11" },
+        { id: "dm2", name: "Duo Arrocero Clasico", description: "Ceviche de pota y pescado + Arroz con mariscos. Elige entre Regular o Extremo. Imagenes referenciales.", price: 27.9, image: "/DAC.png", available: true, category: "11" },
+        { id: "dm3", name: "Duo Arrocero Pescado", description: "Ceviche de Pescado + Arroz con mariscos. Elige entre Regular o Extremo. Imagenes referenciales.", price: 26.9, image: "/DAP.png", available: true, category: "11" },
+        { id: "dm4", name: "Duo Arrocero Mixto", description: "Ceviche Mixto + Arroz con mariscos. Elige entre Regular o Extremo. Imagenes referenciales.", price: 27.9, image: "/DAM.png", available: true, category: "11" },
+        { id: "dm5", name: "Duo Langostinos", description: "Ceviche de Pescado + Chicharron de Langostinos. Elige entre Regular o Extremo. Imagenes referenciales.", price: 28.9, image: "/DL.png", available: true, category: "11" },
+        { id: "dm6", name: "Duo Mixto", description: "Ceviche de Pescado + Chicharron Mixto. Elige entre Regular o Extremo. Imagenes referenciales.", price: 27.9, image: "/DM.png", available: true, category: "11" },
+        { id: "dm7", name: "Duo Pescado", description: "Ceviche de Pescado + Chicharron de Pescado. Elige entre Regular o Extremo. Imagenes referenciales.", price: 25.9, image: "/DP.png", available: true, category: "11" },
+        { id: "dm8", name: "Duo Causa Pescado", description: "Causa de papa amarilla rellena con trozos de pota y tartara + Ceviche de pescado. Imagen referencial.", price: 30.9, image: "/DCP.png", available: true, category: "11" },
+        
+        // Trios Marinos (category: "12")
+        { id: "tm1", name: "Trio Mixto + 1 chilcano gratis", description: "Ceviche de Pescado + Arroz con Mariscos o Chaufa con Mariscos + Chicharron Mixto + 1 chilcano Gratis (Solo Salon). Elige Regular o Extremo. Imagenes referenciales.", price: 30.9, image: "/TM1cg.png", available: true, category: "12" },
+        { id: "tm2", name: "Trio Clasico + 1 chilcano gratis", description: "Ceviche de Pescado + Arroz con Mariscos o Chaufa con Mariscos + Chicharron de Pota + 1 chilcano Gratis (Solo Salon). Elige entre Regular o Extremo. Imagenes referenciales.", price: 25.9, image: "/TC1cg.png", available: true, category: "12" },
+        { id: "tm3", name: "Trio Langostinos + 1 chilcano gratis", description: "Ceviche de Pescado + Arroz con Mariscos o Chaufa con Mariscos + Chicharron de Langostinos + 1 chilcano Gratis (Solo Salon). Elige entre Regular o Extremo. Imagenes referenciales.", price: 32.9, image: "/TL1cg.png", available: true, category: "12" },
+        { id: "tm4", name: "Trio Pescado + 1 chilcano gratis", description: "Ceviche de Pescado + Arroz con Mariscos o Chaufa con Mariscos + Chicharron de Pescado + 1 chilcano Gratis (Solo Salon). Elige entre Regular o Extremo. Imagenes referenciales.", price: 27.9, image: "/TP1cg.png", available: true, category: "12" },
+
+        // Dobles (category: "13")
+        { id: "d1", name: "Doble Vaso Extremo", description: "2 Leche de tigre con trozos de pota + 2 chicharrones clasico regular (pota) + 2 chichas. Imagenes referenciales.", price: 39.9, image: "/DVE.png", available: true, category: "13" },
+        { id: "d2", name: "Doble Vaso Regular", description: "2 Leche de tigre con trozos de pota + 2 chicharrones clasico (pota) regular + 2 chichas. Imagenes referenciales.", price: 32.9, image: "/DVR.png", available: true, category: "13" },
+        { id: "d3", name: "Doble Trio Pescado", description: "2 Trios Pescado (Ceviche de pescado + arroz con mariscos + chicharron de pescado) + 2 chichas + 2 Chilcanos Gratis (Solo Salon) Elige entre regular o extrema. Imagenes referenciales.", price: 59.9, image: "/DTP.png", available: true, category: "13" },
+        { id: "d4", name: "Doble Trio Clasico", description: "2 Trios Clasico (Ceviche de pescado + arroz con mariscos + chicharron de pota) + 2 chichas + 2 Chilcano Gratis (Solo Salon). Elige entre regular o extremo. Imagenes referenciales.", price: 57.9, image: "/DTC.png", available: true, category: "13" },
+        { id: "d5", name: "Doble Duo Pescado", description: "2 Duos Pescado (ceviche de pescado + chicharron de pescado) + 2 Chichas 12 Oz + 2 Chilcanos Gratis (Solo Salon). Elige entre Regular o Extremo. Imagenes referenciales.", price: 52.9, image: "/DDP.png", available: true, category: "13" },
+        { id: "d6", name: "Doble Duo Mixto", description: "2 Duos Mixto (ceviche de pescado+ chicharron mixto) + 2 Chichas de 12Oz + 2 Chilcanos Gratis (Solo Salon). Elige entre Regular o Extremo. Imagenes referenciales.", price: 54.9, image: "/DDM.png", available: true, category: "13" },
+        { id: "d7", name: "Doble Duo Clasico", description: "2 Duos Clasico (ceviche de pescado + chicharron de pota) + 2 Chichas de 12Oz + 2 Chilcanos Gratis (Solo Salon). Elige entre Regular o Extremo. Imagenes referenciales.", price: 50.9, image: "/DDC.png", available: true, category: "13" },
+        { id: "d8", name: "Doble Trio Mixto", description: "2 Trios Mixto (Ceviche de pescado, arroz con mariscos + chicharron mixto)+ 2 chichas + 2 Chilcanos Gratis (Solo Salon). Elige entre Regular o Extremo. Imagenes referenciales.", price: 61.9, image: "/DTM.png", available: true, category: "13" },
+
+        // Rondas Marinas (category: "14")
+        { id: "rm1", name: "Ronda del Tigre Inka Kola", description: "Ceviche de Pescado + Chicharron Clasico + Chicharron de Pescado + Chaufa de Mariscos + Leche de tigre mixta + 2 inka kolas 300 ml + 2 chilcanos GRATIS (solo salon) Imagenes referenciales.", price: 59.9, image: "/RdTIK.png", available: true, category: "14" },
+        { id: "rm2", name: "Ronda Mixta + Chilcanos", description: "Ronda Marina Mixta: Arroz chaufa de mariscos + Arroz con mariscos + ceviche de pescado + chicharron + causa rellena con trozos de pota y tartara. Gratis Chilcanos gratis", price: 51.9, image: "/RMmC.png", available: true, category: "14" },
+        { id: "rm3", name: "Ronda Mixta Inka Kola", description: "Ceviche de pescado + Chicharron de Pescado + Arroz con Mariscos + Chaufa de Mariscos + Causa rellena con trozos de pota y tartara + 2 inka kolas 300 ml + 2 chilcanos GRATIS (solo salon).", price: 59.9, image: "/RMIK.png", available: true, category: "14" },
+        { id: "rm4", name: "Ronda del Tigre Chicha", description: "Ceviche de Pescado + Chicharron de Clasico + Chicharron de Pescado + Chaufa de Mariscos + Leche de tigre mixta + 2 chichas + 2 chilcanos GRATIS (solo salon) Imagenes referenciales.", price: 59.9, image: "/RdTC.png", available: true, category: "14" },
+        { id: "rm5", name: "Ronda Mixta Chicha", description: "Ceviche de pescado + Chicharron de Pescado + Arroz con Mariscos + Chaufa de Mariscos + Causa rellena con trozos de pota y tartara + 2 chichas. Imagenes referenciales.", price: 59.9, image: "/RMC.png", available: true, category: "14" },
+
+        // Mega Marino (category: "15")
+        { id: "mm1", name: "Mega Marino Super", description: "Chicharron de pescado + Pota + Langostinos + Chaufa de Mariscos + Papas fritas + Leche de tigre de pescado 9 Oz + 2 chilcanos. Imagen referencial.", price: 49.9, image: "/MMS.png", available: true, category: "15" },
+        { id: "mm2", name: "Mega Marino Power", description: "Chicharron de pescado, pota y langostinos + Chaufa de mariscos + Papas fritas + 2 chilcanos. Incluye nuestra salsa acevichada. Imagen referencial.", price: 42.9, image: "/MMP.png", available: true, category: "15" },
+        { id: "mm3", name: "Mega Marino Clasico", description: "Chicharron de pescado + Chicharron de langostinos + Chaufa de mariscos + Papas fritas + Yuquitas fritas. Imagenes referenciales", price: 34.9, image: "/MMC.png", available: true, category: "15" },
+
+        // Familiares (category: "16")
+        { id: "fam1", name: "Familiar Tradicional (3 personas)", description: "Incluye: 1 trio clasico + 1 duo clasico + 1 ceviche de pescado + 3 chichas 12 oz. Imagen referencial.", price: 99.9, image: "/FT3P.png", available: true, category: "16" },
+        { id: "fam2", name: "Familiar Cevichero (4 personas)", description: "2 Ceviches clasicos + 1 Chicharron Pescado+ Arroz con mariscos + 2 porciones de yucas + 4 Chichas 12 Onz", price: 110.9, image: "/FC4P.png", available: true, category: "16" },
+        { id: "fam3", name: "Familiar Marino (3 personas)", description: "Incluye: 1 trio clasico + 1 duo clasico + 1 bowl de arroz con mariscos + 3 chichas 12 oz. Imagen referencial.", price: 99.9, image: "/FM3P.png", available: true, category: "16" },
       ]
-      setItems(categoryId ? mock.filter(m => m.category === categoryId) : mock)
+      setItems(mock) // Always load all mock items, filtering happens in the component
     }
   }
 
-  const filteredItems = items.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredItems = useMemo(() => {
+    let filtered = items;
+
+    if (selectedCategory) {
+      filtered = items.filter(item => item.category === selectedCategory);
+    }
+
+    if (searchQuery) {
+      filtered = filtered.filter(item =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    return filtered;
+  }, [items, selectedCategory, searchQuery]);
+
 
   const handleItemClick = (item: MenuItem) => {
-    setSelectedItem(item)
-    setIsModalOpen(true)
+    if (item.available === false) {
+      setToastMessage("Producto agotado");
+    } else {
+      setSelectedItem(item)
+      setIsModalOpen(true)
+    }
   }
 
   const handleAddToCart = (item: any) => {
@@ -119,7 +242,7 @@ export default function CartaPage() {
     return found?.id
   }
 
-  const activeCategoryName = orderedCategoryNames.find(n => (n === "Mostrar todo" ? selectedCategory === null : getCategoryIdByName(n) === selectedCategory)) || "Mostrar todo"
+  const activeCategoryName = selectedCategory ? categories.find(c => c.id === selectedCategory)?.name || "" : "Mostrar todo"
 
   // Two fixed rows: first 8 chips ("Mostrar todo" to "Ceviches"), then remaining 9
   const firstRow = orderedCategoryNames.slice(0, 8)
@@ -128,6 +251,14 @@ export default function CartaPage() {
   return (
     <div className="min-h-screen overflow-x-hidden bg-white">
       <CustomerHeader />
+
+      {toastMessage && (
+        <SimpleToast
+          message={toastMessage}
+          type="error"
+          onClose={() => setToastMessage(null)}
+        />
+      )}
 
       {/* Hero full-bleed edge-to-edge */}
       <section className="relative h-[300px] w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden">
@@ -265,11 +396,6 @@ export default function CartaPage() {
           </div>
         </div>
 
-        {/* Category heading (optional) */}
-        <div className="mt-2 mb-8 text-center">
-          <h3 className="text-[#1000a3] font-display font-bold text-[20px]">{activeCategoryName}</h3>
-        </div>
-
         {/* Products */}
         <section className="pb-12">
           {loading ? (
@@ -280,11 +406,42 @@ export default function CartaPage() {
             </div>
           ) : (
             <>
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredItems.map((item) => (
-                  <ProductCard key={item.id} menuItem={item} onSelect={() => handleItemClick(item)} />
-                ))}
-              </div>
+              {selectedCategory === null ? (
+                // "Mostrar todo" View: Grouped by category
+                orderedCategoryNames.slice(1).map(categoryName => {
+                  const categoryId = getCategoryIdByName(categoryName);
+                  if (!categoryId) return null;
+                  
+                  const productsForCategory = filteredItems.filter(item => item.category === categoryId);
+                  
+                  if (productsForCategory.length === 0) return null;
+
+                  return (
+                    <div key={categoryId} className="mb-16">
+                      <div className="mt-2 mb-8 text-center">
+                        <h3 className="text-[#1000a3] font-display font-bold text-[20px]">{categoryName}</h3>
+                      </div>
+                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {productsForCategory.map((item) => (
+                          <ProductCard key={item.id} menuItem={item} onSelect={() => handleItemClick(item)} />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                // Single Category View
+                <>
+                  <div className="mt-2 mb-8 text-center">
+                    <h3 className="text-[#1000a3] font-display font-bold text-[20px]">{activeCategoryName}</h3>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {filteredItems.map((item) => (
+                      <ProductCard key={item.id} menuItem={item} onSelect={() => handleItemClick(item)} />
+                    ))}
+                  </div>
+                </>
+              )}
             </>
           )}
         </section>
@@ -306,3 +463,4 @@ export default function CartaPage() {
     </div>
   )
 }
+
