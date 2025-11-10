@@ -53,7 +53,9 @@ export interface OptionConfig {
     id: string
     name: string
     price: number
+    image?: string
   }[]
+  maxSelections?: number
   defaultSelection?: string
 }
 

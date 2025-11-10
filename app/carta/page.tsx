@@ -73,7 +73,74 @@ export default function CartaPage() {
     } catch (error) {
       const mock: MenuItem[] = [
         // Promos Fast (category: "1")
-        { id: "p1", name: "Promo Familiar Cevichero 4", description: "2 Ceviches clasicos + 1 Chicharron Pescado+ Arroz con mariscos + 2 porciones de yucas + 4 Chichas 12 Onz. Promocion solo valida por web y tamaño regular", price: 69.90, image: "/PF1.png", available: true, category: "1" },
+        { id: "p1", name: "Promo Familiar Cevichero 4", description: "2 Ceviches clasicos + 1 Chicharron Pescado+ Arroz con mariscos + 2 porciones de yucas + 4 Chichas 12 Onz. Promocion solo valida por web y tamaño regular", price: 69.90, image: "/PF1.png", available: true, category: "1",
+        configuracionOpciones: [
+         {
+           "id": "bebida",
+           "name": "Elige tu bebida",
+           "type": "checkbox",
+           "required": true,
+           "maxSelections": 4,
+           "options": [
+             { "id": "bebida-1", "name": "Chicha Morada 12 Oz.", "price": 0, "image": "/CM12Oz.png" },
+             { "id": "bebida-2", "name": "Agrandar chicha 16oz", "price": 1, "image": "/CM16Oz.png" },
+             { "id": "bebida-3", "name": "Coca Cola 300 ml", "price": 1.50, "image": "/CC300ml.png" },
+             { "id": "bebida-4", "name": "Inka Kola 300 ml", "price": 1.50, "image": "/IK300ml.png" },
+             { "id": "bebida-5", "name": "Agrandar Chicha 21oz", "price": 2, "image": "/CM21Oz.png" },
+             { "id": "bebida-6", "name": "Agua San Luis 750 ml", "price": 3, "image": "/ASL750ml.png" },
+             { "id": "bebida-7", "name": "Coca Cola 500 ml", "price": 3, "image": "/CC500ml.png" },
+             { "id": "bebida-8", "name": "Inka Kola 500 ml", "price": 3, "image": "/IK500ml.png" }
+           ]
+         },
+         {
+           "id": "presentacion",
+           "name": "Elige tu presentación",
+           "type": "radio",
+           "required": true,
+           "options": [
+             { "id": "presentacion-1", "name": "Promo Familiar Cevichero", "price": 0, "image": "/PFC.png" }
+           ]
+         },
+         {
+           "id": "aji",
+           "name": "Elige tu nivel de ají",
+           "type": "radio",
+           "required": true,
+           "options": [
+             { "id": "aji-1", "name": "Picante normal", "price": 0, "image": "/PicanteNormal.png" },
+             { "id": "aji-2", "name": "Sin ají", "price": 0, "image": "/SinAji.png" }
+           ]
+         },
+         {
+           "id": "adicionales",
+           "name": "¿Deseas agregar algo más a tu pedido?",
+           "type": "checkbox",
+           "required": false,
+           "options": [
+             { "id": "adicional-1", "name": "Yuquita Regular 4 Und", "price": 4.9, "image": "/YR4und.png" },
+             { "id": "adicional-2", "name": "Chicha Morada 12 Oz.", "price": 4.9, "image": "/CM12Oz.png" },
+             { "id": "adicional-3", "name": "Chicha Morado 16 Oz.", "price": 5.9, "image": "/CM16Oz.png" },
+             { "id": "adicional-4", "name": "Vaso Al Paso Leche de Tigre Pota c/yuquita", "price": 12.9, "image": "/VaPLdTPcy.png" },
+             { "id": "adicional-5", "name": "Canchita Adicional", "price": 2.9, "image": "/CA.png" },
+             { "id": "adicional-6", "name": "Yuquita Grande 7 Und", "price": 7.9, "image": "/YG7und.png" },
+             { "id": "adicional-7", "name": "Chicharrón Clásico Extremo", "price": 12.9, "image": "/CCE.png" },
+             { "id": "adicional-8", "name": "Chilcano Power c/Chicharron", "price": 7.9, "image": "/ChilcanoPowerconChicharron.png" },
+             { "id": "adicional-9", "name": "Causa 200 Millas", "price": 9.9, "image": "/Causa200millas.png" },
+             { "id": "adicional-10", "name": "Vaso Leche de Tigre Pescado Regular Adicional", "price": 11.9, "image": "/VLdTPRA.png" },
+             { "id": "adicional-11", "name": "Chilcano Power", "price": 4.9, "image": "/ChilcanoPower.png" },
+             { "id": "adicional-12", "name": "Vaso Al Paso Leche de Tigre Pota", "price": 9.9, "image": "/VaPLdTP.png" },
+             { "id": "adicional-13", "name": "Chicharrón Clásico Regular", "price": 9.9, "image": "/CCR.png" },
+             { "id": "adicional-14", "name": "Inka Kola Sabor Original 500 ml", "price": 5.9, "image": "/IK500ml.png" },
+             { "id": "adicional-15", "name": "Yuquitas Regular + Chicha 12 Oz", "price": 7.9, "image": "/YRplusC12Oz.png" },
+             { "id": "adicional-16", "name": "Coca Cola Sabor Original 500 ml", "price": 5.9, "image": "/CC500ml.png" },
+             { "id": "adicional-17", "name": "Chicharrón de Pescado Extremo", "price": 10.9, "image": "/ChicharrondePescadoExtremo.png" },
+             { "id": "adicional-18", "name": "Chicharrón de Pescado Regular", "price": 7.9, "image": "/ChicharrondePescadoRegular.png" },
+             { "id": "adicional-19", "name": "Vaso Leche de Tigre Pota Regular Adicional", "price": 10.9, "image": "/VLdTPoRA.png" },
+             { "id": "adicional-20", "name": "Chicha Morada 9 Onz", "price": 3.9, "image": "/CM9Oz.png" }
+           ]
+         }
+       ]
+      },
         { id: "p2", name: "Promo familiar Marino 3", description: "1 Trio clasico+ 1 Duo Tradicional + Arroz con mariscos + 3 Chichas 12 Onz. Promocion solo valida por web y tamaño regular", price: 64.9, image: "/PFM3.png", available: true, category: "1" },
         { id: "p3", name: "Promo Ronda Marina Mixta", description: "Ceviche de pescado + Chicharron de Pescado + Arroz con Mariscos + Chaufa de Mariscos + Causa + 2 Chichas de 12 Onz. Promocion valida solo en web. Imagenes referenciales.", price: 49.9, image: "/PRMM.png", available: true, category: "1" },
         { id: "p4", name: "Promo Megamarino Power", description: "Chicharron de pescado, pota y langostinos + Chaufa de mariscos + Papas fritas + 2 chilcanos. Promocion solo valida en la web.", price: 39.9, image: "/PMP.png", available: true, category: "1" },
