@@ -76,20 +76,20 @@ export default function CartaPage() {
         { id: "p1", name: "Promo Familiar Cevichero 4", description: "2 Ceviches clasicos + 1 Chicharron Pescado+ Arroz con mariscos + 2 porciones de yucas + 4 Chichas 12 Onz. Promocion solo valida por web y tamaño regular", price: 69.90, image: "/PF1.png", available: true, category: "1",
         configuracionOpciones: [
          {
-           "id": "bebida",
-           "name": "Elige tu bebida",
-           "type": "checkbox",
-           "required": true,
-           "maxSelections": 4,
-           "options": [
-             { "id": "bebida-1", "name": "Chicha Morada 12 Oz.", "price": 0, "image": "/CM12Oz.png" },
-             { "id": "bebida-2", "name": "Agrandar chicha 16oz", "price": 1, "image": "/CM16Oz.png" },
-             { "id": "bebida-3", "name": "Coca Cola 300 ml", "price": 1.50, "image": "/CC300ml.png" },
-             { "id": "bebida-4", "name": "Inka Kola 300 ml", "price": 1.50, "image": "/IK300ml.png" },
-             { "id": "bebida-5", "name": "Agrandar Chicha 21oz", "price": 2, "image": "/CM21Oz.png" },
-             { "id": "bebida-6", "name": "Agua San Luis 750 ml", "price": 3, "image": "/ASL750ml.png" },
-             { "id": "bebida-7", "name": "Coca Cola 500 ml", "price": 3, "image": "/CC500ml.png" },
-             { "id": "bebida-8", "name": "Inka Kola 500 ml", "price": 3, "image": "/IK500ml.png" }
+           id: 'elige-tu-bebida',
+           name: "Elige tu bebida",
+           type: 'checkbox',
+           required: true,
+           maxSelections: 4,
+           options: [
+             { id: 'chicha-morada-12oz', name: 'Chicha Morada 12 Oz', price: 0, image: '/CM12Oz.png' },
+             { id: 'chicha-morada-16oz', name: 'Chicha Morada 16 Oz', price: 1.00, image: '/CM16Oz.png' },
+             { id: 'chicha-morada-21oz', name: 'Chicha Morada 21 Oz', price: 1.50, image: '/CM21Oz.png' },
+             { id: 'coca-cola-300ml', name: 'Coca Cola 300 ml', price: 1.50, image: '/CC300ml.png' },
+             { id: 'inca-kola-300ml', name: 'Inka Kola 300 ml', price: 1.50, image: '/IK300ml.png' },
+             { id: 'agua-san-luis-750ml', name: 'Agua San Luis 750 ml', price: 3.00, image: '/ASL750ml.png' },
+             { id: 'coca-cola-500ml', name: 'Coca Cola 500 ml', price: 3.00, image: '/CC500ml.png' },
+             { id: 'inka-kola-500ml', name: 'Inka Kola 500 ml', price: 3.00, image: '/IK500ml.png' }
            ]
          },
          {

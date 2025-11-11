@@ -131,6 +131,13 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+.aji-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 280px;
+  margin-left: 0;
+  margin-right: 0;
+}
+
 @layer base {
   html {
     @apply overflow-x-hidden;
