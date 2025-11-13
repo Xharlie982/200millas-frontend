@@ -364,7 +364,7 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                                 {isCompleted ? 'Completado' : 'Requerido'} ({maxSel})
                               </span>
                             ) : (
-                              <span className="text-[11px] md:text-xs font-semibold px-2 py-0.5 rounded-md border bg-gray-100 text-gray-700 border-gray-200">
+                              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
                                 Opcional
                               </span>
                             )}
@@ -376,10 +376,12 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                           <ul className={`grid gap-3 ${isAjiLikeGrid ? 'aji-grid' : 'grid-cols-3'}`}>
                             {group.options.map((option) => {
                               const isSelected = !!selectedOptions[group.id]?.[option.id]
+                              const isFree = option.price === 0
+                              const isException = group.id === 'presentacion' || group.id === 'aji';
                               return (
                                 <li
                                   key={option.id}
-                                  className={`rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 ${isSelected ? 'border-[#1000a3] bg-[#9F99DA]' : 'border-gray-200 bg-white hover:border-gray-300'}`}
+                                  className={`rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 ${isSelected ? (isFree && !isException ? 'border-emerald-200 bg-emerald-100' : 'border-[#9F99DA] bg-[#9F99DA]') : 'border-gray-200 bg-white hover:border-gray-300'}`}
                                   onClick={() => handleOptionClick(group.id, option.id)}
                                 >
                                   <div className="relative w-full aspect-[3/4]">
@@ -388,7 +390,7 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                                     )}
                                   </div>
                                   <div className="px-2 py-2 text-center">
-                                    <p className={`font-semibold text-xs ${isSelected ? 'text-white' : 'text-gray-800'}`}>{option.name}</p>
+                                    <p className={`font-semibold text-xs ${isSelected ? (isFree && !isException ? 'text-emerald-900' : 'text-white') : 'text-gray-800'}`}>{option.name}</p>
                                   </div>
                                 </li>
                               )})}
@@ -398,18 +400,19 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                             {group.options.map((option) => {
                               const isSelected = !!selectedOptions[group.id]?.[option.id]
                               const isFree = option.price === 0
+                              const isException = group.id === 'presentacion' || group.id === 'aji';
                               const qty = selectedOptions[group.id]?.[option.id] || 0
                               return (
                                 <li
                                   key={option.id}
-                                  className={`rounded-xl min-h-[104px] overflow-hidden flex items-stretch cursor-pointer border transition-colors ${isSelected ? 'bg-[#9F99DA] border-transparent' : 'bg-white border-gray-200'}`}
+                                  className={`rounded-xl min-h-[104px] overflow-hidden flex items-stretch cursor-pointer border-2 transition-colors ${isSelected ? (isFree && !isException ? 'bg-emerald-100 border-emerald-200' : 'bg-[#9F99DA] border-[#9F99DA]') : 'bg-white border-gray-200'}`}
                                   onClick={() => handleOptionClick(group.id, option.id)}
                                 >
                                   {option.image && (
                                     <div className="relative w-28 h-[104px] flex-shrink-0">
                                       <Image src={option.image} alt={option.name} fill className="object-cover" />
                                       {isFree && (
-                                        <span className="absolute top-1 left-1 bg-teal-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm ring-1 ring-white/50">
+                                        <span className="absolute top-2 left-2 transform -rotate-[10deg] bg-[#10B981] text-white text-[11px] font-black px-2.5 py-1 rounded-md shadow-lg shadow-emerald-500/40">
                                           INCLUIDO
                                         </span>
                                       )}
@@ -417,7 +420,7 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                                   )}
                                   <div className="flex grow items-center justify-between p-3">
                                     <div className="flex flex-col">
-                                      <p className={`font-semibold text-sm md:text-base ${isSelected ? 'text-white' : ''}`}>{option.name}</p>
+                                      <p className={`font-semibold text-sm md:text-base ${isSelected ? (isFree && !isException ? 'text-emerald-900' : 'text-white') : ''}`}>{option.name}</p>
                                       {!isFree && (
                                         <p className={`text-xs md:text-sm ${isSelected ? 'text-white/80' : 'text-gray-600'}`}>+ {formatCurrency(option.price)}</p>
                                       )}
@@ -426,7 +429,7 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                                       {isSelected && (
                                         <button
                                           type="button"
-                                          className="h-10 w-10 rounded-full flex items-center justify-center cursor-pointer bg-[#1000a3] text-white hover:bg-blue-900"
+                                          className="h-10 w-10 rounded-full flex items-center justify-center cursor-pointer bg-[#1000a3] text-white"
                                           onClick={(e) => {
                                             e.stopPropagation()
                                             decrementOption(group.id, option.id)
@@ -436,12 +439,12 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                                         </button>
                                       )}
                                       {isSelected && (
-                                        <span className={`min-w-[20px] text-lg font-bold text-center ${isSelected ? 'text-white' : 'text-gray-900'}`}>{qty}</span>
+                                        <span className={`min-w-[20px] text-lg font-bold text-center ${isSelected ? (isFree && !isException ? 'text-emerald-900' : 'text-white') : 'text-gray-900'}`}>{qty}</span>
                                       )}
                                       {(!isFree || isSelected) && (
                                         <button
                                           type="button"
-                                          className="h-10 w-10 rounded-full flex items-center justify-center cursor-pointer bg-[#1000a3] text-white hover:bg-blue-900"
+                                          className="h-10 w-10 rounded-full flex items-center justify-center cursor-pointer bg-[#1000a3] text-white"
                                           onClick={(e) => {
                                             e.stopPropagation()
                                             incrementOption(group.id, option.id)
