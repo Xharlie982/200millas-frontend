@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useRef } from "react"
 import Image from "next/image"
-import { Minus, Plus, InfoIcon, XIcon, BellIcon } from "lucide-react"
+import { Minus, Plus, InfoIcon, XIcon, BellIcon, ChevronDown } from "lucide-react"
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import type { CartItemWithOptions, SelectedOptionsByGroup } from "@/lib/cart-context"
 import { formatCurrency } from "@/lib/utils"
 import type { OptionConfig } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
 interface ProductDetailModalProps {
   isOpen: boolean
@@ -234,16 +235,18 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
         <div
           key={maxWarning}
           ref={toastRef}
-          className="fixed top-11 right-3 z-[2147483600] bg-[#318EF0] text-white px-3 py-3 rounded-xl shadow-2xl flex items-center gap-2 min-h-[56px] pointer-events-auto"
+          className="fixed top-11 right-3 z-[2147483600] bg-[#318EF0] text-white px-3 py-3 rounded-xl shadow-2xl flex items-center gap-3 min-h-[56px] pointer-events-auto"
           onPointerDownCapture={(e) => e.stopPropagation()}
           onMouseDownCapture={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
         >
-          <InfoIcon className="h-6 w-6" />
-          <span className="flex-grow text-center font-bold text-base whitespace-nowrap leading-tight">{maxWarning}</span>
+          <div className="h-6 w-6 rounded-full bg-white/15 grid place-items-center">
+            <InfoIcon className="h-4 w-4" />
+          </div>
+          <span className="flex-grow text-center text-sm md:text-base font-semibold whitespace-nowrap leading-tight">{maxWarning}</span>
           <button
             type="button"
-            className="text-white/80 hover-text-white cursor-pointer"
+            className="text-white/90 hover:text-white cursor-pointer"
             onPointerDownCapture={(e) => e.stopPropagation()}
             onMouseDownCapture={(e) => e.stopPropagation()}
             onClick={(e) => {
@@ -251,7 +254,7 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
               setMaxWarning(null)
             }}
           >
-            <XIcon className="h-6 w-6" />
+            <XIcon className="h-5 w-5" />
           </button>
         </div>
       )}
@@ -313,7 +316,7 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex-1 pr-4">
                     <DialogTitle asChild>
-                      <h2 className="text-4xl font-black tracking-tight text-[#212121] font-secondary">{menuItem.name}</h2>
+                      <h2 className="text-3xl font-extrabold tracking-tight text-[#212121] font-secondary">{menuItem.name}</h2>
                     </DialogTitle>
                     <DialogDescription asChild>
                       <p id="product-modal-description" className="text-sm text-gray-500 mt-1">{menuItem.description}</p>
@@ -344,7 +347,7 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
 
                     return (
                     <AccordionItem key={group.id} value={group.id} className={`${index>0 ? 'border-t' : ''}`}>
-                      <AccordionTrigger className="font-semibold text-[15px] md:text-[16px] hover:no-underline py-3">
+                      <AccordionTrigger className="group font-semibold text-[15px] md:text-[16px] hover:no-underline py-3 [&>svg]:hidden">
                         <div className="flex w-full items-center justify-between">
                           <div className="flex flex-col items-start text-left">
                             <span>{group.name}</span>
@@ -354,10 +357,15 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                               </p>
                             )}
                           </div>
-                          <div className="flex items-center gap-2">
-                            {group.required && (
+                          <div className="flex items-center gap-3" style={{ minWidth: '130px' }}>
+                            <ChevronDown className="h-5 w-5 shrink-0 transition-transform duration-300 ease-in-out text-[#1000a3] group-data-[state=open]:rotate-180" />
+                            {group.required ? (
                               <span className={`text-[11px] md:text-xs font-semibold px-2 py-0.5 rounded-md border ${isCompleted ? 'bg-green-100 text-green-800 border-green-200' : 'bg-[#FFEBEB] text-[#D40E0E] border-[#F8C1C1]'}`}>
                                 {isCompleted ? 'Completado' : 'Requerido'} ({maxSel})
+                              </span>
+                            ) : (
+                              <span className="text-[11px] md:text-xs font-semibold px-2 py-0.5 rounded-md border bg-gray-100 text-gray-700 border-gray-200">
+                                Opcional
                               </span>
                             )}
                           </div>
@@ -371,7 +379,7 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                               return (
                                 <li
                                   key={option.id}
-                                  className={`rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 ${isSelected ? 'border-[#1000a3] bg-[#9F99DA]' : 'border-transparent bg-white hover:border-gray-300'}`}
+                                  className={`rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 ${isSelected ? 'border-[#1000a3] bg-[#9F99DA]' : 'border-gray-200 bg-white hover:border-gray-300'}`}
                                   onClick={() => handleOptionClick(group.id, option.id)}
                                 >
                                   <div className="relative w-full aspect-[3/4]">
@@ -394,54 +402,55 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                               return (
                                 <li
                                   key={option.id}
-                                  className={`rounded-xl p-3 pr-3 flex justify-between items-center cursor-pointer border ${isSelected ? 'bg-[#9F99DA] border-indigo-300' : 'bg-white border-gray-200'} transition-colors`}
+                                  className={`rounded-xl min-h-[104px] overflow-hidden flex items-stretch cursor-pointer border transition-colors ${isSelected ? 'bg-[#9F99DA] border-transparent' : 'bg-white border-gray-200'}`}
                                   onClick={() => handleOptionClick(group.id, option.id)}
                                 >
-                                  <div className="flex items-center gap-4">
-                                    {option.image && (
-                                      <Image
-                                        src={option.image}
-                                        alt={option.name}
-                                        width={96}
-                                        height={96}
-                                        className="rounded-md object-cover"
-                                      />
-                                    )}
-                                    <div className="flex flex-col">
-                                      <p className="font-semibold text-sm md:text-base">{option.name}</p>
-                                      {!isFree && (
-                                        <p className="text-xs md:text-sm text-gray-600">+ {formatCurrency(option.price)}</p>
+                                  {option.image && (
+                                    <div className="relative w-28 h-[104px] flex-shrink-0">
+                                      <Image src={option.image} alt={option.name} fill className="object-cover" />
+                                      {isFree && (
+                                        <span className="absolute top-1 left-1 bg-teal-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm ring-1 ring-white/50">
+                                          INCLUIDO
+                                        </span>
                                       )}
                                     </div>
-                                  </div>
-                                  <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                                    {isSelected && (
-                                      <button
-                                        type="button"
-                                        className="h-10 w-10 rounded-full flex items-center justify-center text-white bg-[#1000a3] cursor-pointer"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          decrementOption(group.id, option.id)
-                                        }}
-                                      >
-                                        <Minus className="h-6 w-6" />
-                                      </button>
-                                    )}
-                                    {isSelected && (
-                                      <span className="min-w-[16px] text-center font-semibold">{qty}</span>
-                                    )}
-                                    {(!isFree || isSelected) && (
-                                      <button
-                                        type="button"
-                                        className="h-10 w-10 rounded-full flex items-center justify-center text-white bg-[#1000a3] cursor-pointer"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          incrementOption(group.id, option.id)
-                                        }}
-                                      >
-                                        <Plus className="h-6 w-6" />
-                                      </button>
-                                    )}
+                                  )}
+                                  <div className="flex grow items-center justify-between p-3">
+                                    <div className="flex flex-col">
+                                      <p className={`font-semibold text-sm md:text-base ${isSelected ? 'text-white' : ''}`}>{option.name}</p>
+                                      {!isFree && (
+                                        <p className={`text-xs md:text-sm ${isSelected ? 'text-white/80' : 'text-gray-600'}`}>+ {formatCurrency(option.price)}</p>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                                      {isSelected && (
+                                        <button
+                                          type="button"
+                                          className="h-10 w-10 rounded-full flex items-center justify-center cursor-pointer bg-[#1000a3] text-white hover:bg-blue-900"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            decrementOption(group.id, option.id)
+                                          }}
+                                        >
+                                          <Minus className="h-6 w-6" strokeWidth={3} />
+                                        </button>
+                                      )}
+                                      {isSelected && (
+                                        <span className={`min-w-[20px] text-lg font-bold text-center ${isSelected ? 'text-white' : 'text-gray-900'}`}>{qty}</span>
+                                      )}
+                                      {(!isFree || isSelected) && (
+                                        <button
+                                          type="button"
+                                          className="h-10 w-10 rounded-full flex items-center justify-center cursor-pointer bg-[#1000a3] text-white hover:bg-blue-900"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            incrementOption(group.id, option.id)
+                                          }}
+                                        >
+                                          <Plus className="h-6 w-6" strokeWidth={3} />
+                                        </button>
+                                      )}
+                                    </div>
                                   </div>
                                 </li>
                               )})}
@@ -468,24 +477,31 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                 )}
                 <div className="flex justify-between items-center gap-4">
                   <div className="flex flex-col gap-1">
-                    <span className="text-lg font-medium text-gray-700 whitespace-nowrap">
+                    <span className="text-base font-bold text-gray-800 whitespace-nowrap">
                       Precio base: {formatCurrency(menuItem.price)}
                     </span>
                     {totalPrice - menuItem.price * quantity > 0 && (
-                      <span className="text-sm text-gray-600 whitespace-nowrap">
+                      <span className="text-sm font-bold text-gray-600 whitespace-nowrap">
                         Extras: {formatCurrency((totalPrice - menuItem.price * quantity))}
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 bg-gray-100 rounded-full p-1">
-                      <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 cursor-pointer" onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="text-xl font-bold w-10 text-center">{quantity}</span>
-                      <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 cursor-pointer" onClick={() => setQuantity((q) => q + 1)}>
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                    <div className="flex items-center gap-3 rounded-full bg-gray-100 p-1">
+                      <button
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        disabled={quantity <= 1}
+                        className="h-10 w-10 flex items-center justify-center rounded-full transition-colors text-[#1000a3] disabled:text-gray-400 disabled:cursor-not-allowed enabled:hover:bg-gray-200"
+                      >
+                        <Minus className="h-5 w-5" strokeWidth={3.5} />
+                      </button>
+                      <span className="text-xl font-extrabold w-10 text-center">{quantity}</span>
+                      <button
+                        onClick={() => setQuantity((q) => q + 1)}
+                        className="h-10 w-10 flex items-center justify-center rounded-full transition-colors text-[#1000a3] hover:bg-gray-200"
+                      >
+                        <Plus className="h-5 w-5" strokeWidth={3.5} />
+                      </button>
                     </div>
                     <Button
                       className="bg-[#1000a3] text-white font-bold text-lg h-12 flex-grow cursor-pointer rounded-full"
