@@ -115,28 +115,40 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
           delete newOptions[groupId]
         } else {
           newOptions[groupId] = { [optionId]: 1 }
+          // Auto-close radio groups when a choice is made (except for adicionales, which are unlimited)
+          if (group.id !== 'adicionales') {
+            setOpenItems((items) => items.filter((id) => id !== groupId))
+          }
         }
         return newOptions
       }
-      
+
       const newGroupOptions = { ...(newOptions[groupId] || {}) }
-      const currentSelections = Object.keys(newGroupOptions).length
       const maxSelections = group.maxSelections ?? Infinity
+      const currentTotal = Object.values(newGroupOptions).reduce(
+        (a: number, b: number) => a + (b as number),
+        0
+      )
 
       if (newGroupOptions[optionId]) {
+        // Deselect option: remove it entirely
         delete newGroupOptions[optionId]
       } else {
-        if (currentSelections >= maxSelections) {
+        // New option: ensure we don't exceed the max total units
+        if (currentTotal >= maxSelections) {
           setMaxWarning(`Máximo ${maxSelections} productos`)
           return prev
         }
         newGroupOptions[optionId] = 1
       }
-      
+
       newOptions[groupId] = newGroupOptions
       // If after toggle we reach the max (considering quantities), auto-close this section
-      const sum = Object.values(newGroupOptions).reduce((a: number, b: number) => a + (b as number), 0)
-      if (sum >= maxSelections) {
+      const sum = Object.values(newGroupOptions).reduce(
+        (a: number, b: number) => a + (b as number),
+        0
+      )
+      if (sum >= maxSelections && group.id !== 'adicionales') {
         setOpenItems((items) => items.filter((id) => id !== groupId))
       }
       return newOptions
@@ -155,7 +167,7 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
       groupOptions[optionId] = (groupOptions[optionId] || 0) + 1
       newOptions[groupId] = groupOptions
       const newTotal = Object.values(groupOptions).reduce((a, b) => a + b, 0)
-      if (newTotal >= maxSelections) {
+      if (newTotal >= maxSelections && group.id !== 'adicionales') {
         setOpenItems((items) => items.filter((id) => id !== groupId))
       }
       return newOptions
@@ -335,22 +347,39 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                     const selectedCount = getGroupSelectedCount(group.id)
                     const maxSel = group.maxSelections || 1
                     const isCompleted = group.required && selectedCount >= maxSel
-                    
-                    const selectedOptionNames = group.required && isCompleted 
-                      ? group.options
-                        .filter(opt => selectedOptions[group.id]?.[opt.id])
-                        .map(opt => `${opt.name} (x${selectedOptions[group.id]?.[opt.id] || 1})`)
-                        .join(', ')
-                      : null
+                    const optionalCompleted = !group.required && maxSel === 1 && selectedCount >= maxSel
 
-                    const isAjiLikeGrid = group.type === 'radio' && group.options.length <= 2
+                    const selectedOptionNames =
+                      selectedCount > 0
+                        ? group.options
+                            .filter(opt => selectedOptions[group.id]?.[opt.id])
+                            .map(opt => {
+                              const qty = selectedOptions[group.id]?.[opt.id] || 1
+                              // For radio groups quantity is always 1, so we only show the name
+                              return group.type === 'radio' ? opt.name : `${opt.name} (x${qty})`
+                            })
+                            .join(', ')
+                        : null
+
+                    const displayName =
+                      group.name.startsWith("Elige tu bebida")
+                        ? (maxSel > 1 ? "Elige tus bebidas" : "Elige tu bebida")
+                        : group.name
+
+                    const isRiceGrid =
+                      group.id === "presentacion-arroz" ||
+                      (group.id === "presentacion" && menuItem.name.startsWith("Leche de Tigre"))
+                    const isAjiLikeGrid =
+                      group.type === "radio" &&
+                      !isRiceGrid &&
+                      group.options.length <= 2
 
                     return (
                     <AccordionItem key={group.id} value={group.id} className={`${index>0 ? 'border-t' : ''}`}>
                       <AccordionTrigger className="group font-semibold text-[15px] md:text-[16px] hover:no-underline py-3 [&>svg]:hidden">
                         <div className="flex w-full items-center justify-between">
                           <div className="flex flex-col items-start text-left">
-                            <span>{group.name}</span>
+                            <span>{displayName}</span>
                             {selectedOptionNames && (
                               <p className="text-xs text-gray-500 font-normal mt-1 truncate max-w-xs">
                                 {selectedOptionNames}
@@ -364,8 +393,20 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                                 {isCompleted ? 'Completado' : 'Requerido'} ({maxSel})
                               </span>
                             ) : (
-                              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
-                                Opcional
+                              <span
+                                className={`text-[11px] md:text-xs font-semibold px-3 py-1 rounded-full border ${
+                                  optionalCompleted
+                                    ? 'bg-gray-100 text-gray-700 border-gray-300'
+                                    : 'bg-gray-100 text-gray-600 border-gray-200'
+                                }`}
+                              >
+                                {group.id === 'adicionales'
+                                  ? 'Opcional'
+                                  : optionalCompleted
+                                  ? 'Completado'
+                                  : maxSel === 1
+                                  ? 'Opcional (1)'
+                                  : 'Opcional'}
                               </span>
                             )}
                           </div>
@@ -373,15 +414,26 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                       </AccordionTrigger>
                       <AccordionContent className="pt-0 pb-2">
                         {group.type === 'radio' ? (
-                          <ul className={`grid gap-3 ${isAjiLikeGrid ? 'aji-grid' : 'grid-cols-3'}`}>
-                            {group.options.map((option) => {
+                          <ul className={`grid gap-3 ${isRiceGrid ? 'rice-grid' : isAjiLikeGrid ? 'aji-grid' : 'grid-cols-3'}`}>
+                            {(displayName.startsWith("Elige tu bebida") || displayName.startsWith("Elige tus bebidas")
+                              ? [...group.options].sort((a, b) => a.price - b.price)
+                              : group.options
+                            ).map((option) => {
                               const isSelected = !!selectedOptions[group.id]?.[option.id]
                               const isFree = option.price === 0
-                              const isException = group.id === 'presentacion' || group.id === 'aji';
+                              const isException =
+                                group.id === "presentacion" ||
+                                group.id === "aji" ||
+                                group.id === "presentacion-arroz"
+
                               return (
                                 <li
                                   key={option.id}
-                                  className={`rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 ${isSelected ? (isFree && !isException ? 'border-emerald-200 bg-emerald-100' : 'border-[#9F99DA] bg-[#9F99DA]') : 'border-gray-200 bg-white hover:border-gray-300'}`}
+                                  className={`rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 ${
+                                    isSelected
+                                      ? "border-[#9F99DA] bg-[#9F99DA]"
+                                      : "border-gray-200 bg-white hover:border-gray-300"
+                                  }`}
                                   onClick={() => handleOptionClick(group.id, option.id)}
                                 >
                                   <div className="relative w-full aspect-[3/4]">
@@ -390,29 +442,49 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                                     )}
                                   </div>
                                   <div className="px-2 py-2 text-center">
-                                    <p className={`font-semibold text-xs ${isSelected ? (isFree && !isException ? 'text-emerald-900' : 'text-white') : 'text-gray-800'}`}>{option.name}</p>
+                                    <p
+                                      className={`font-semibold text-xs ${
+                                        isSelected ? "text-white" : "text-gray-800"
+                                      }`}
+                                    >
+                                      {option.name}
+                                    </p>
+                                    {!isFree && (
+                                      <p
+                                        className={`text-[11px] mt-0.5 ${
+                                          isSelected ? "text-white/80" : "text-gray-600"
+                                        }`}
+                                      >
+                                        + {formatCurrency(option.price)}
+                                      </p>
+                                    )}
                                   </div>
                                 </li>
-                              )})}
+                              )
+                            })}
                           </ul>
                         ) : (
                           <ul className="space-y-3">
-                            {group.options.map((option) => {
+                            {(displayName.startsWith("Elige tu bebida") || displayName.startsWith("Elige tus bebidas")
+                              ? [...group.options].sort((a, b) => a.price - b.price)
+                              : group.options
+                            ).map((option) => {
                               const isSelected = !!selectedOptions[group.id]?.[option.id]
                               const isFree = option.price === 0
-                              const isException = group.id === 'presentacion' || group.id === 'aji';
+                              const isException = group.id === 'presentacion' || group.id === 'aji' || group.id === 'presentacion-arroz';
                               const qty = selectedOptions[group.id]?.[option.id] || 0
+                              const isSingleChoice = (group.maxSelections || Infinity) === 1
                               return (
                                 <li
                                   key={option.id}
-                                  className={`rounded-xl min-h-[104px] overflow-hidden flex items-stretch cursor-pointer border-2 transition-colors ${isSelected ? (isFree && !isException ? 'bg-emerald-100 border-emerald-200' : 'bg-[#9F99DA] border-[#9F99DA]') : 'bg-white border-gray-200'}`}
+                                  className={`rounded-xl ${isSingleChoice ? 'min-h-[80px]' : 'min-h-[104px]'} overflow-hidden flex items-stretch cursor-pointer border-2 transition-colors ${isSelected ? 'bg-[#9F99DA] border-[#9F99DA]' : 'bg-white border-gray-200'}`}
                                   onClick={() => handleOptionClick(group.id, option.id)}
                                 >
                                   {option.image && (
                                     <div className="relative w-28 h-[104px] flex-shrink-0">
                                       <Image src={option.image} alt={option.name} fill className="object-cover" />
                                       {isFree && (
-                                        <span className="absolute top-2 left-2 transform -rotate-[10deg] bg-[#10B981] text-white text-[11px] font-black px-2.5 py-1 rounded-md shadow-lg shadow-emerald-500/40">
+                                        <span className="absolute top-2 left-2 transform -rotate-[10deg] bg-[#1000a3] text-white text-[11px] font-black px-2.5 py-1 rounded-md shadow-lg shadow-indigo-500/40">
                                           INCLUIDO
                                         </span>
                                       )}
@@ -420,40 +492,42 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                                   )}
                                   <div className="flex grow items-center justify-between p-3">
                                     <div className="flex flex-col">
-                                      <p className={`font-semibold text-sm md:text-base ${isSelected ? (isFree && !isException ? 'text-emerald-900' : 'text-white') : ''}`}>{option.name}</p>
+                                      <p className={`font-semibold text-sm md:text-base ${isSelected ? 'text-white' : ''}`}>{option.name}</p>
                                       {!isFree && (
                                         <p className={`text-xs md:text-sm ${isSelected ? 'text-white/80' : 'text-gray-600'}`}>+ {formatCurrency(option.price)}</p>
                                       )}
                                     </div>
-                                    <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                                      {isSelected && (
-                                        <button
-                                          type="button"
-                                          className="h-10 w-10 rounded-full flex items-center justify-center cursor-pointer bg-[#1000a3] text-white"
-                                          onClick={(e) => {
-                                            e.stopPropagation()
-                                            decrementOption(group.id, option.id)
-                                          }}
-                                        >
-                                          <Minus className="h-6 w-6" strokeWidth={3} />
-                                        </button>
-                                      )}
-                                      {isSelected && (
-                                        <span className={`min-w-[20px] text-lg font-bold text-center ${isSelected ? (isFree && !isException ? 'text-emerald-900' : 'text-white') : 'text-gray-900'}`}>{qty}</span>
-                                      )}
-                                      {(!isFree || isSelected) && (
-                                        <button
-                                          type="button"
-                                          className="h-10 w-10 rounded-full flex items-center justify-center cursor-pointer bg-[#1000a3] text-white"
-                                          onClick={(e) => {
-                                            e.stopPropagation()
-                                            incrementOption(group.id, option.id)
-                                          }}
-                                        >
-                                          <Plus className="h-6 w-6" strokeWidth={3} />
-                                        </button>
-                                      )}
-                                    </div>
+                                    {!isSingleChoice && (
+                                      <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                                        {isSelected && (
+                                          <button
+                                            type="button"
+                                            className="h-10 w-10 rounded-full flex items-center justify-center cursor-pointer bg-[#1000a3] text-white"
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              decrementOption(group.id, option.id)
+                                            }}
+                                          >
+                                            <Minus className="h-6 w-6" strokeWidth={3} />
+                                          </button>
+                                        )}
+                                        {isSelected && (
+                                          <span className={`min-w-[20px] text-lg font-bold text-center ${isSelected ? 'text-white' : 'text-gray-900'}`}>{qty}</span>
+                                        )}
+                                        {(!isFree || isSelected) && (
+                                          <button
+                                            type="button"
+                                            className="h-10 w-10 rounded-full flex items-center justify-center cursor-pointer bg-[#1000a3] text-white"
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              incrementOption(group.id, option.id)
+                                            }}
+                                          >
+                                            <Plus className="h-6 w-6" strokeWidth={3} />
+                                          </button>
+                                        )}
+                                      </div>
+                                    )}
                                   </div>
                                 </li>
                               )})}
