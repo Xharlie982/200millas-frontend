@@ -2570,21 +2570,432 @@ export default function CartaPage() {
         ]},
 
         // Rondas Marinas (category: "14")
-        { id: "rm1", name: "Ronda del Tigre Inka Kola", description: "Ceviche de Pescado + Chicharron Clasico + Chicharron de Pescado + Chaufa de Mariscos + Leche de tigre mixta + 2 inka kolas 300 ml + 2 chilcanos GRATIS (solo salon) Imagenes referenciales.", price: 59.9, image: "/RdTIK.png", available: true, category: "14" },
-        { id: "rm2", name: "Ronda Mixta + Chilcanos", description: "Ronda Marina Mixta: Arroz chaufa de mariscos + Arroz con mariscos + ceviche de pescado + chicharron + causa rellena con trozos de pota y tartara. Gratis Chilcanos gratis", price: 51.9, image: "/RMmC.png", available: true, category: "14" },
-        { id: "rm3", name: "Ronda Mixta Inka Kola", description: "Ceviche de pescado + Chicharron de Pescado + Arroz con Mariscos + Chaufa de Mariscos + Causa rellena con trozos de pota y tartara + 2 inka kolas 300 ml + 2 chilcanos GRATIS (solo salon).", price: 59.9, image: "/RMIK.png", available: true, category: "14" },
-        { id: "rm4", name: "Ronda del Tigre Chicha", description: "Ceviche de Pescado + Chicharron de Clasico + Chicharron de Pescado + Chaufa de Mariscos + Leche de tigre mixta + 2 chichas + 2 chilcanos GRATIS (solo salon) Imagenes referenciales.", price: 59.9, image: "/RdTC.png", available: true, category: "14" },
-        { id: "rm5", name: "Ronda Mixta Chicha", description: "Ceviche de pescado + Chicharron de Pescado + Arroz con Mariscos + Chaufa de Mariscos + Causa rellena con trozos de pota y tartara + 2 chichas. Imagenes referenciales.", price: 59.9, image: "/RMC.png", available: true, category: "14" },
+        { id: "rm1", name: "Ronda del Tigre Inka Kola", description: "Ceviche de Pescado + Chicharron Clasico + Chicharron de Pescado + Chaufa de Mariscos + Leche de tigre mixta + 2 inka kolas 300 ml + 2 chilcanos GRATIS (solo salon) Imagenes referenciales.", price: 59.9, image: "/RdTIK.png", available: true, category: "14",
+        configuracionOpciones: [
+          {
+            id: "elige-tu-bebida-rm1",
+            name: "Elige tu bebida",
+            type: "checkbox",
+            required: true,
+            maxSelections: 2,
+            options: [
+              { id: "coca-cola-300ml-rm1", name: "Coca Cola 300 ml", price: 0, image: "/CC300ml.png" },
+              { id: "inka-kola-300ml-rm1", name: "Inka Kola 300 ml", price: 0, image: "/IK300ml.png" },
+              { id: "agua-san-luis-750ml-rm1", name: "Agua San Luis 750 ml", price: 0, image: "/ASL750ml.png" },
+              { id: "coca-cola-500ml-rm1", name: "Coca Cola 500 ml", price: 3.0, image: "/CC500ml.png" },
+              { id: "inka-kola-500ml-rm1", name: "Inka Kola 500 ml", price: 3.0, image: "/IK500ml.png" },
+            ],
+          },
+          {
+            id: "presentacion",
+            name: "Elige tu presentación",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "presentacion-1", name: "Ronda del Tigre Regular", price: 0, image: "/MRdTIK.png" },
+            ],
+          },
+          {
+            id: "aji",
+            name: "Elige tu nivel de ají",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "aji-1", name: "Con ají", price: 0, image: "/PicanteNormal.png" },
+              { id: "aji-2", name: "Sin ají", price: 0, image: "/SinAji.png" },
+            ],
+          },
+          {
+            id: "adicionales",
+            name: "¿Deseas agregar algo más a tu pedido?",
+            type: "checkbox",
+            required: false,
+            options: adicionalesOptions,
+          },
+        ]},
+        { id: "rm2", name: "Ronda Mixta + Chilcanos", description: "Ronda Marina Mixta: Arroz chaufa de mariscos + Arroz con mariscos + ceviche de pescado + chicharron + causa rellena con trozos de pota y tartara. Gratis Chilcanos gratis", price: 51.9, image: "/RMmC.png", available: true, category: "14",
+        configuracionOpciones: [
+          {
+            id: "presentacion",
+            name: "Elige tu presentación",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "presentacion-1", name: "Ronda Mixta Regular", price: 0, image: "/MRMmC.png" },
+            ],
+          },
+          {
+            id: "aji",
+            name: "Elige tu nivel de ají",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "aji-1", name: "Con ají", price: 0, image: "/PicanteNormal.png" },
+              { id: "aji-2", name: "Sin ají", price: 0, image: "/SinAji.png" },
+            ],
+          },
+          {
+            id: "adicionales",
+            name: "¿Deseas agregar algo más a tu pedido?",
+            type: "checkbox",
+            required: false,
+            options: adicionalesOptions,
+          },
+        ]},
+        { id: "rm3", name: "Ronda Mixta Inka Kola", description: "Ceviche de pescado + Chicharron de Pescado + Arroz con Mariscos + Chaufa de Mariscos + Causa rellena con trozos de pota y tartara + 2 inka kolas 300 ml + 2 chilcanos GRATIS (solo salon).", price: 59.9, image: "/RMIK.png", available: true, category: "14",
+        configuracionOpciones: [
+          {
+            id: "elige-tu-bebida-rm3",
+            name: "Elige tu bebida",
+            type: "checkbox",
+            required: true,
+            maxSelections: 2,
+            options: [
+              { id: "coca-cola-300ml-rm3", name: "Coca Cola 300 ml", price: 0, image: "/CC300ml.png" },
+              { id: "inka-kola-300ml-rm3", name: "Inka Kola 300 ml", price: 0, image: "/IK300ml.png" },
+              { id: "agua-san-luis-750ml-rm3", name: "Agua San Luis 750 ml", price: 0, image: "/ASL750ml.png" },
+              { id: "coca-cola-500ml-rm3", name: "Coca Cola 500 ml", price: 3.0, image: "/CC500ml.png" },
+              { id: "inka-kola-500ml-rm3", name: "Inka Kola 500 ml", price: 3.0, image: "/IK500ml.png" },
+            ],
+          },
+          {
+            id: "presentacion",
+            name: "Elige tu presentación",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "presentacion-1", name: "Ronda Mixta Regular", price: 0, image: "/MRMIK.png" },
+            ],
+          },
+          {
+            id: "aji",
+            name: "Elige tu nivel de ají",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "aji-1", name: "Con ají", price: 0, image: "/PicanteNormal.png" },
+              { id: "aji-2", name: "Sin ají", price: 0, image: "/SinAji.png" },
+            ],
+          },
+          {
+            id: "adicionales",
+            name: "¿Deseas agregar algo más a tu pedido?",
+            type: "checkbox",
+            required: false,
+            options: adicionalesOptions,
+          },
+        ]},
+        { id: "rm4", name: "Ronda del Tigre Chicha", description: "Ceviche de Pescado + Chicharron de Clasico + Chicharron de Pescado + Chaufa de Mariscos + Leche de tigre mixta + 2 chichas + 2 chilcanos GRATIS (solo salon) Imagenes referenciales.", price: 59.9, image: "/RdTC.png", available: true, category: "14",
+        configuracionOpciones: [
+          {
+            id: "elige-tu-bebida-rm4",
+            name: "Elige tu bebida",
+            type: "checkbox",
+            required: true,
+            maxSelections: 2,
+            options: [
+              { id: "chicha-morada-12oz-rm4", name: "Chicha Morada 12 Oz.", price: 0, image: "/CM12Oz.png" },
+              { id: "chicha-morada-16oz-rm4", name: "Chicha Morada 16 Oz.", price: 1.0, image: "/CM16Oz.png" },
+              { id: "chicha-morada-21oz-rm4", name: "Chicha Morada 21 Oz.", price: 2.0, image: "/CM21Oz.png" },
+            ],
+          },
+          {
+            id: "presentacion",
+            name: "Elige tu presentación",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "presentacion-1", name: "Ronda del Tigre Regular", price: 0, image: "/MRdTC.png" },
+            ],
+          },
+          {
+            id: "aji",
+            name: "Elige tu nivel de ají",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "aji-1", name: "Con ají", price: 0, image: "/PicanteNormal.png" },
+              { id: "aji-2", name: "Sin ají", price: 0, image: "/SinAji.png" },
+            ],
+          },
+          {
+            id: "adicionales",
+            name: "¿Deseas agregar algo más a tu pedido?",
+            type: "checkbox",
+            required: false,
+            options: adicionalesOptions,
+          },
+        ]},
+        { id: "rm5", name: "Ronda Mixta Chicha", description: "Ceviche de pescado + Chicharron de Pescado + Arroz con Mariscos + Chaufa de Mariscos + Causa rellena con trozos de pota y tartara + 2 chichas. Imagenes referenciales.", price: 59.9, image: "/RMC.png", available: true, category: "14",
+        configuracionOpciones: [
+          {
+            id: "elige-tu-bebida-rm5",
+            name: "Elige tu bebida",
+            type: "checkbox",
+            required: true,
+            maxSelections: 2,
+            options: [
+              { id: "chicha-morada-12oz-rm5", name: "Chicha Morada 12 Oz.", price: 0, image: "/CM12Oz.png" },
+              { id: "chicha-morada-16oz-rm5", name: "Chicha Morada 16 Oz.", price: 1.0, image: "/CM16Oz.png" },
+              { id: "chicha-morada-21oz-rm5", name: "Chicha Morada 21 Oz.", price: 2.0, image: "/CM21Oz.png" },
+            ],
+          },
+          {
+            id: "presentacion",
+            name: "Elige tu presentación",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "presentacion-1", name: "Ronda Mixta Regular", price: 0, image: "/MRMC.png" },
+            ],
+          },
+          {
+            id: "aji",
+            name: "Elige tu nivel de ají",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "aji-1", name: "Con ají", price: 0, image: "/PicanteNormal.png" },
+              { id: "aji-2", name: "Sin ají", price: 0, image: "/SinAji.png" },
+            ],
+          },
+          {
+            id: "adicionales",
+            name: "¿Deseas agregar algo más a tu pedido?",
+            type: "checkbox",
+            required: false,
+            options: adicionalesOptions,
+          },
+        ]},
 
         // Mega Marino (category: "15")
-        { id: "mm1", name: "Mega Marino Super", description: "Chicharron de pescado + Pota + Langostinos + Chaufa de Mariscos + Papas fritas + Leche de tigre de pescado 9 Oz + 2 chilcanos. Imagen referencial.", price: 49.9, image: "/MMS.png", available: true, category: "15" },
-        { id: "mm2", name: "Mega Marino Power", description: "Chicharron de pescado, pota y langostinos + Chaufa de mariscos + Papas fritas + 2 chilcanos. Incluye nuestra salsa acevichada. Imagen referencial.", price: 42.9, image: "/MMP.png", available: true, category: "15" },
-        { id: "mm3", name: "Mega Marino Clasico", description: "Chicharron de pescado + Chicharron de langostinos + Chaufa de mariscos + Papas fritas + Yuquitas fritas. Imagenes referenciales", price: 34.9, image: "/MMC.png", available: true, category: "15" },
+        { id: "mm1", name: "Mega Marino Super", description: "Chicharron de pescado + Pota + Langostinos + Chaufa de Mariscos + Papas fritas + Leche de tigre de pescado 9 Oz + 2 chilcanos. Imagen referencial.", price: 49.9, image: "/MMS.png", available: true, category: "15",
+        configuracionOpciones: [
+          {
+            id: "chilcano",
+            name: "Chilcano",
+            type: "checkbox",
+            required: true,
+            maxSelections: 2,
+            options: [
+              { id: "chilcano-adicional-mm1", name: "Chilcano adicional", price: 0, image: "/ChilcanoPower.png" },
+            ],
+          },
+          {
+            id: "presentacion",
+            name: "Elige tu presentación",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "presentacion-1", name: "Mega Marino Super", price: 0, image: "/MMS.png" },
+            ],
+          },
+          {
+            id: "aji",
+            name: "Elige tu nivel de ají",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "aji-1", name: "Con ají", price: 0, image: "/PicanteNormal.png" },
+              { id: "aji-2", name: "Sin ají", price: 0, image: "/SinAji.png" },
+            ],
+          },
+          {
+            id: "adicionales",
+            name: "¿Deseas agregar algo más a tu pedido?",
+            type: "checkbox",
+            required: false,
+            options: adicionalesOptions,
+          },
+        ]},
+        { id: "mm2", name: "Mega Marino Power", description: "Chicharron de pescado, pota y langostinos + Chaufa de mariscos + Papas fritas + 2 chilcanos. Incluye nuestra salsa acevichada. Imagen referencial.", price: 42.9, image: "/MMP.png", available: true, category: "15",
+        configuracionOpciones: [
+          {
+            id: "chilcano",
+            name: "Chilcano",
+            type: "checkbox",
+            required: true,
+            maxSelections: 2,
+            options: [
+              { id: "chilcano-adicional-mm2", name: "Chilcano adicional", price: 0, image: "/ChilcanoPower.png" },
+            ],
+          },
+          {
+            id: "presentacion",
+            name: "Elige tu presentación",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "presentacion-1", name: "Mega Marino Power Regular", price: 0, image: "/MMP.png" },
+            ],
+          },
+          {
+            id: "adicionales",
+            name: "¿Deseas agregar algo más a tu pedido?",
+            type: "checkbox",
+            required: false,
+            options: adicionalesOptions,
+          },
+        ]},
+        { id: "mm3", name: "Mega Marino Clasico", description: "Chicharron de pescado + Chicharron de langostinos + Chaufa de mariscos + Papas fritas + Yuquitas fritas. Imagenes referenciales", price: 34.9, image: "/MMC.png", available: true, category: "15",
+        configuracionOpciones: [
+          {
+            id: "presentacion",
+            name: "Elige tu presentación",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "presentacion-1", name: "Mega Marino Clásico Regular", price: 0, image: "/MMC.png" },
+            ],
+          },
+          {
+            id: "adicionales",
+            name: "¿Deseas agregar algo más a tu pedido?",
+            type: "checkbox",
+            required: false,
+            options: adicionalesOptions,
+          },
+        ]},
 
         // Familiares (category: "16")
-        { id: "fam1", name: "Familiar Tradicional (3 personas)", description: "Incluye: 1 trio clasico + 1 duo clasico + 1 ceviche de pescado + 3 chichas 12 oz. Imagen referencial.", price: 99.9, image: "/FT3P.png", available: true, category: "16" },
-        { id: "fam2", name: "Familiar Cevichero (4 personas)", description: "2 Ceviches clasicos + 1 Chicharron Pescado+ Arroz con mariscos + 2 porciones de yucas + 4 Chichas 12 Onz", price: 110.9, image: "/FC4P.png", available: true, category: "16" },
-        { id: "fam3", name: "Familiar Marino (3 personas)", description: "Incluye: 1 trio clasico + 1 duo clasico + 1 bowl de arroz con mariscos + 3 chichas 12 oz. Imagen referencial.", price: 99.9, image: "/FM3P.png", available: true, category: "16" },
+        { id: "fam1", name: "Familiar Tradicional (3 personas)", description: "Incluye: 1 trio clasico + 1 duo clasico + 1 ceviche de pescado + 3 chichas 12 oz. Imagen referencial.", price: 99.9, image: "/FT3P.png", available: true, category: "16",
+        configuracionOpciones: [
+          {
+            id: "elige-tu-bebida-fam1",
+            name: "Elige tu bebida",
+            type: "checkbox",
+            required: true,
+            maxSelections: 3,
+            options: [
+              { id: "chicha-morada-12oz-fam1", name: "Chicha Morada 12 Oz.", price: 0, image: "/CM12Oz.png" },
+              { id: "chicha-morada-16oz-fam1", name: "Chicha Morada 16 Oz.", price: 1.0, image: "/CM16Oz.png" },
+              { id: "coca-cola-300ml-fam1", name: "Coca Cola 300 ml", price: 1.5, image: "/CC300ml.png" },
+              { id: "inka-kola-300ml-fam1", name: "Inka Kola 300 ml", price: 1.5, image: "/IK300ml.png" },
+              { id: "chicha-morada-21oz-fam1", name: "Chicha Morada 21 Oz.", price: 2.0, image: "/CM21Oz.png" },
+              { id: "agua-san-luis-750ml-fam1", name: "Agua San Luis 750 ml", price: 3.0, image: "/ASL750ml.png" },
+              { id: "coca-cola-500ml-fam1", name: "Coca Cola 500 ml", price: 3.0, image: "/CC500ml.png" },
+              { id: "inka-kola-500ml-fam1", name: "Inka Kola 500 ml", price: 3.0, image: "/IK500ml.png" },
+            ],
+          },
+          {
+            id: "presentacion",
+            name: "Elige tu presentación",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "presentacion-1", name: "Familiar Tradicional (3 personas)", price: 0, image: "/FT3P.png" },
+            ],
+          },
+          {
+            id: "aji",
+            name: "Elige tu nivel de ají",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "aji-1", name: "Con ají", price: 0, image: "/PicanteNormal.png" },
+              { id: "aji-2", name: "Sin ají", price: 0, image: "/SinAji.png" },
+            ],
+          },
+          {
+            id: "adicionales",
+            name: "¿Deseas agregar algo más a tu pedido?",
+            type: "checkbox",
+            required: false,
+            options: adicionalesOptions,
+          },
+        ]},
+        { id: "fam2", name: "Familiar Cevichero (4 personas)", description: "2 Ceviches clasicos + 1 Chicharron Pescado+ Arroz con mariscos + 2 porciones de yucas + 4 Chichas 12 Onz", price: 110.9, image: "/FC4P.png", available: true, category: "16",
+        configuracionOpciones: [
+          {
+            id: "elige-tu-bebida-fam2",
+            name: "Elige tu bebida",
+            type: "checkbox",
+            required: true,
+            maxSelections: 4,
+            options: [
+              { id: "chicha-morada-12oz-fam2", name: "Chicha Morada 12 Oz.", price: 0, image: "/CM12Oz.png" },
+              { id: "chicha-morada-16oz-fam2", name: "Chicha Morada 16 Oz.", price: 1.0, image: "/CM16Oz.png" },
+              { id: "coca-cola-300ml-fam2", name: "Coca Cola 300 ml", price: 1.5, image: "/CC300ml.png" },
+              { id: "inka-kola-300ml-fam2", name: "Inka Kola 300 ml", price: 1.5, image: "/IK300ml.png" },
+              { id: "chicha-morada-21oz-fam2", name: "Chicha Morada 21 Oz.", price: 2.0, image: "/CM21Oz.png" },
+              { id: "agua-san-luis-750ml-fam2", name: "Agua San Luis 750 ml", price: 3.0, image: "/ASL750ml.png" },
+              { id: "coca-cola-500ml-fam2", name: "Coca Cola 500 ml", price: 3.0, image: "/CC500ml.png" },
+              { id: "inka-kola-500ml-fam2", name: "Inka Kola 500 ml", price: 3.0, image: "/IK500ml.png" },
+            ],
+          },
+          {
+            id: "presentacion",
+            name: "Elige tu presentación",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "presentacion-1", name: "Familiar Cevichero (4 personas)", price: 0, image: "/FC4P.png" },
+            ],
+          },
+          {
+            id: "aji",
+            name: "Elige tu nivel de ají",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "aji-1", name: "Con ají", price: 0, image: "/PicanteNormal.png" },
+              { id: "aji-2", name: "Sin ají", price: 0, image: "/SinAji.png" },
+            ],
+          },
+          {
+            id: "adicionales",
+            name: "¿Deseas agregar algo más a tu pedido?",
+            type: "checkbox",
+            required: false,
+            options: adicionalesOptions,
+          },
+        ]},
+        { id: "fam3", name: "Familiar Marino (3 personas)", description: "Incluye: 1 trio clasico + 1 duo clasico + 1 bowl de arroz con mariscos + 3 chichas 12 oz. Imagen referencial.", price: 99.9, image: "/FM3P.png", available: true, category: "16",
+        configuracionOpciones: [
+          {
+            id: "elige-tu-bebida-fam3",
+            name: "Elige tu bebida",
+            type: "checkbox",
+            required: true,
+            maxSelections: 3,
+            options: [
+              { id: "chicha-morada-12oz-fam3", name: "Chicha Morada 12 Oz.", price: 0, image: "/CM12Oz.png" },
+              { id: "chicha-morada-16oz-fam3", name: "Chicha Morada 16 Oz.", price: 1.0, image: "/CM16Oz.png" },
+              { id: "coca-cola-300ml-fam3", name: "Coca Cola 300 ml", price: 1.5, image: "/CC300ml.png" },
+              { id: "inka-kola-300ml-fam3", name: "Inka Kola 300 ml", price: 1.5, image: "/IK300ml.png" },
+              { id: "chicha-morada-21oz-fam3", name: "Chicha Morada 21 Oz.", price: 2.0, image: "/CM21Oz.png" },
+              { id: "agua-san-luis-750ml-fam3", name: "Agua San Luis 750 ml", price: 3.0, image: "/ASL750ml.png" },
+              { id: "coca-cola-500ml-fam3", name: "Coca Cola 500 ml", price: 3.0, image: "/CC500ml.png" },
+              { id: "inka-kola-500ml-fam3", name: "Inka Kola 500 ml", price: 3.0, image: "/IK500ml.png" },
+            ],
+          },
+          {
+            id: "presentacion",
+            name: "Elige tu presentación",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "presentacion-1", name: "Familiar Marino (3 personas)", price: 0, image: "/FM3P.png" },
+            ],
+          },
+          {
+            id: "aji",
+            name: "Elige tu nivel de ají",
+            type: "radio",
+            required: true,
+            options: [
+              { id: "aji-1", name: "Con ají", price: 0, image: "/PicanteNormal.png" },
+              { id: "aji-2", name: "Sin ají", price: 0, image: "/SinAji.png" },
+            ],
+          },
+          {
+            id: "adicionales",
+            name: "¿Deseas agregar algo más a tu pedido?",
+            type: "checkbox",
+            required: false,
+            options: adicionalesOptions,
+          },
+        ]},
       ]
       setItems(mock) // Always load all mock items, filtering happens in the component
     }
