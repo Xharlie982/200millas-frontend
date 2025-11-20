@@ -45,6 +45,7 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
   // Control open sections to allow auto-closing when a group is completed
   const [openItems, setOpenItems] = useState<string[]>([])
   const [maxWarning, setMaxWarning] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
   const [isMultiplierBannerVisible, setIsMultiplierBannerVisible] = useState(true)
   const toastRef = useRef<HTMLDivElement | null>(null)
 
@@ -71,6 +72,15 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
       return () => clearTimeout(timer);
     }
   }, [maxWarning]);
+
+  useEffect(() => {
+    if (validationError) {
+      const timer = setTimeout(() => {
+        setValidationError(null)
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [validationError])
 
   useEffect(() => {
     if (quantity > 1) {
@@ -199,7 +209,7 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
         const selections = getGroupSelectedCount(group.id);
         const min = group.maxSelections ?? 1;
         if (selections < min) {
-          alert(`Por favor, selecciona ${min} opción(es) para "${group.name}"`);
+          setValidationError(`Por favor, selecciona ${min} opción(es) para "${group.name}"`)
           return;
         }
       }
@@ -266,6 +276,35 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
             onClick={(e) => {
               e.stopPropagation()
               setMaxWarning(null)
+            }}
+          >
+            <XIcon className="h-5 w-5" />
+          </button>
+        </div>
+      )}
+      {validationError && (
+        <div
+          key={validationError}
+          ref={toastRef}
+          className="fixed top-11 right-3 z-[2147483600] bg-[#DC2626] text-white px-3 py-3 rounded-xl shadow-2xl flex items-center gap-3 min-h-[56px] pointer-events-auto"
+          onPointerDownCapture={(e) => e.stopPropagation()}
+          onMouseDownCapture={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="h-6 w-6 rounded-full bg-white/15 grid place-items-center">
+            <InfoIcon className="h-4 w-4" />
+          </div>
+          <span className="flex-grow text-center text-sm md:text-base font-semibold whitespace-nowrap leading-tight">
+            {validationError}
+          </span>
+          <button
+            type="button"
+            className="text-white/90 hover:text-white cursor-pointer"
+            onPointerDownCapture={(e) => e.stopPropagation()}
+            onMouseDownCapture={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              setValidationError(null)
             }}
           >
             <XIcon className="h-5 w-5" />
