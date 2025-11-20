@@ -194,8 +194,10 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
   const handleAddToCartClick = () => {
     for (const group of optionGroups) {
       if (group.required) {
-        const selections = selectedOptions[group.id] ? Object.keys(selectedOptions[group.id]).length : 0;
-        const min = group.maxSelections || 1;
+        // Para grupos requeridos validamos por UNIDADES totales seleccionadas,
+        // no solo por cantidad de tipos distintos (especialmente importante en bebidas).
+        const selections = getGroupSelectedCount(group.id);
+        const min = group.maxSelections ?? 1;
         if (selections < min) {
           alert(`Por favor, selecciona ${min} opción(es) para "${group.name}"`);
           return;
