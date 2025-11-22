@@ -130,7 +130,7 @@ export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps =
                   )}
                 </button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-full sm:w-[500px] p-0 gap-0 border-l-0 bg-white" hideClose>
+              <SheetContent side="right" className="w-full sm:w-[450px] p-0 gap-0 border-l-0 bg-white" hideClose>
                 {/* Título accesible requerido por Radix (oculto visualmente) */}
                 <SheetHeader className="sr-only">
                   <SheetTitle>Mi carrito</SheetTitle>
