@@ -6,6 +6,7 @@ import CustomerHeader from "@/components/customer-header"
 import CustomerFooter from "@/components/customer-footer"
 import { ProductDetailModal } from "@/components/ProductDetailModal"
 import { useCart } from "@/lib/cart-context"
+import type { CartItemWithOptions } from "@/lib/cart-context"
 import { apiClient } from "@/lib/api"
 import type { MenuItem, MenuCategory } from "@/lib/types"
 import { Button } from "@/components/ui/button"
@@ -17,7 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { SimpleToast } from "@/components/ui/simple-toast"
 
 export default function CartaPage() {
-  const { addItem } = useCart()
+  const { addItem, removeItem, openCart } = useCart()
   const [categories, setCategories] = useState<MenuCategory[]>([])
   const [items, setItems] = useState<MenuItem[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -27,6 +28,7 @@ export default function CartaPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [editingCartItem, setEditingCartItem] = useState<CartItemWithOptions | null>(null)
 
   useEffect(() => {
     loadCategories()
@@ -3027,10 +3029,23 @@ export default function CartaPage() {
     }
   }
 
+  const handleCartItemEdit = (cartItem: CartItemWithOptions) => {
+    const menuItem = items.find(i => i.id === cartItem.menuItemId)
+    if (!menuItem) return
+    setSelectedItem(menuItem)
+    setEditingCartItem(cartItem)
+    setIsModalOpen(true)
+  }
+
   const handleAddToCart = (item: any) => {
+    if (editingCartItem) {
+      removeItem(editingCartItem.id)
+    }
     addItem(item)
     setIsModalOpen(false)
     setSelectedItem(null)
+    setEditingCartItem(null)
+    // openCart() // Removed auto-open to improve UX as requested
   }
 
   const orderedCategoryNames = [
@@ -3066,7 +3081,7 @@ export default function CartaPage() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-white">
-      <CustomerHeader />
+      <CustomerHeader onEditCartItem={handleCartItemEdit} />
 
       {toastMessage && (
         <SimpleToast
@@ -3271,9 +3286,14 @@ export default function CartaPage() {
           onClose={() => {
             setIsModalOpen(false);
             setSelectedItem(null);
+            setEditingCartItem(null);
           }}
           onAddToCart={handleAddToCart}
           menuItem={selectedItem}
+          initialState={editingCartItem ? {
+            quantity: editingCartItem.quantity,
+            selectedOptions: editingCartItem.selectedOptions
+          } : undefined}
         />
       )}
     </div>

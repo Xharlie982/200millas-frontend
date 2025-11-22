@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
@@ -17,11 +16,15 @@ import {
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import CartSidebar from "@/components/cart-sidebar"
+import type { CartItemWithOptions } from "@/lib/cart-context"
 
-export default function CustomerHeader() {
-  const { items, removeItem, updateQuantity, clearCart, getTotal, getItemCount } = useCart()
+interface CustomerHeaderProps {
+  onEditCartItem?: (item: CartItemWithOptions) => void
+}
+
+export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps = {}) {
+  const { items, removeItem, updateQuantity, getTotal, getItemCount, isCartOpen, openCart, closeCart } = useCart()
   const { isAuthenticated, user, logout } = useAuth()
-  const [isCartOpen, setIsCartOpen] = useState(false)
   const pathname = usePathname()
   const iconSize = "h-7 w-7";
 
@@ -32,7 +35,7 @@ export default function CustomerHeader() {
       return
     }
     // Open checkout modal or redirect to checkout page
-    setIsCartOpen(false)
+    closeCart()
     window.location.href = "/checkout"
   }
 
@@ -110,7 +113,7 @@ export default function CustomerHeader() {
             )}
 
             {/* Cart button */}
-            <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+            <Sheet open={isCartOpen} onOpenChange={(open) => open ? openCart() : closeCart()}>
               <SheetTrigger asChild>
                 <button
                   type="button"
@@ -127,19 +130,20 @@ export default function CustomerHeader() {
                   )}
                 </button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-full sm:w-96">
-                <SheetHeader>
-                  <SheetTitle>Tu Pedido</SheetTitle>
-                  <SheetDescription>
-                    Revisa tu carrito y continúa con el pedido
-                  </SheetDescription>
+              <SheetContent side="right" className="w-full sm:w-[500px] p-0 gap-0 border-l-0 bg-white" hideClose>
+                {/* Título accesible requerido por Radix (oculto visualmente) */}
+                <SheetHeader className="sr-only">
+                  <SheetTitle>Mi carrito</SheetTitle>
+                  <SheetDescription>Resumen de productos en tu carrito</SheetDescription>
                 </SheetHeader>
-                <div className="mt-6">
+                <div className="h-full">
                   <CartSidebar
                     items={items}
                     onRemove={removeItem}
                     onQuantityChange={updateQuantity}
                     onCheckout={handleCheckout}
+                    onContinueShopping={closeCart}
+                    onEditItem={onEditCartItem}
                   />
                 </div>
               </SheetContent>
@@ -172,5 +176,3 @@ export default function CustomerHeader() {
     </header>
   )
 }
-
-

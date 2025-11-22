@@ -34,6 +34,9 @@ interface CartContextType {
   clearCart: () => void
   getTotal: () => number
   getItemCount: () => number
+  isCartOpen: boolean
+  openCart: () => void
+  closeCart: () => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -167,6 +170,7 @@ const areSelectedOptionsEqual = (a: SelectedOptionsByGroup, b: SelectedOptionsBy
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItemWithOptions[]>([])
+  const [isCartOpen, setIsCartOpen] = useState(false)
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -251,6 +255,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return items.reduce((sum, item) => sum + item.quantity, 0)
   }
 
+  const openCart = () => setIsCartOpen(true)
+  const closeCart = () => setIsCartOpen(false)
+
   return (
     <CartContext.Provider
       value={{
@@ -261,6 +268,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         clearCart,
         getTotal,
         getItemCount,
+        isCartOpen,
+        openCart,
+        closeCart,
       }}
     >
       {children}
@@ -275,4 +285,3 @@ export function useCart() {
   }
   return context
 }
-

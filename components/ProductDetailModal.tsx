@@ -32,12 +32,16 @@ interface ProductDetailModalProps {
     image: string
     configuracionOpciones?: OptionConfig[]
   }
+  initialState?: {
+    quantity: number
+    selectedOptions: SelectedOptionsByGroup
+  }
 }
 
 type SelectedOptions = Record<string, Record<string, number>>
 
 
-export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: ProductDetailModalProps) {
+export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart, initialState }: ProductDetailModalProps) {
   const [quantity, setQuantity] = useState(1)
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>({})
   const [imageLoading, setImageLoading] = useState(true)
@@ -53,16 +57,38 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
 
   useEffect(() => {
     if (isOpen) {
-      setQuantity(1)
-      setSelectedOptions({})
+      if (initialState) {
+        // Restore state from props
+        setQuantity(initialState.quantity)
+        
+        // Transform SelectedOptionsByGroup back to internal SelectedOptions format
+        const restoredOptions: SelectedOptions = {}
+        Object.entries(initialState.selectedOptions).forEach(([groupId, items]) => {
+          if (!items) return
+          restoredOptions[groupId] = {}
+          items.forEach(item => {
+             // Assuming item.optionId exists. If not, we might need to look it up by name or use item.id if available
+             // The current schema uses optionId.
+             if (item.optionId) {
+               restoredOptions[groupId][item.optionId] = item.quantity
+             }
+          })
+        })
+        setSelectedOptions(restoredOptions)
+      } else {
+        // Default fresh state
+        setQuantity(1)
+        setSelectedOptions({})
+      }
+      
       setImageLoading(true)
       setActiveAccordionItem(undefined)
-      // open all sections on open
+      // open all sections on open by default
       setOpenItems((menuItem.configuracionOpciones || []).map(g => g.id))
       setMaxWarning(null)
       setIsMultiplierBannerVisible(true)
     }
-  }, [isOpen])
+  }, [isOpen, initialState, menuItem])
 
   useEffect(() => {
     if (maxWarning) {
@@ -228,13 +254,17 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
               optionId: option.id,
               name: option.name,
               price: option.price,
-              quantity: selectedOptions[groupId][optionId]
+              quantity: selectedOptions[groupId][optionId],
+              groupName: group.name // Ensure group name is passed
             });
           }
         }
       }
     }
 
+    // If editing (initialState exists), we might want to reuse ID or handle replacement logic in parent.
+    // But usually cart logic handles "update" by remove+add or replace.
+    // Here we just create the new item object. Parent decides what to do.
     const cartItem: CartItemWithOptions = {
       id: `${menuItem.id}-${JSON.stringify(selectedOptions)}`,
       menuItemId: menuItem.id,
@@ -625,7 +655,7 @@ export function ProductDetailModal({ isOpen, onClose, menuItem, onAddToCart }: P
                       className="bg-[#1000a3] text-white font-bold text-lg h-12 flex-grow cursor-pointer rounded-full"
                       onClick={handleAddToCartClick}
                     >
-                      Agregar ({formatCurrency(totalPrice)})
+                      {initialState ? 'Actualizar' : 'Agregar'} ({formatCurrency(totalPrice)})
                     </Button>
                   </div>
                 </div>
