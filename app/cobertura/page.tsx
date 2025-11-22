@@ -131,16 +131,17 @@ const sjlPoly = [
     { lat: -12.000, lng: -77.025 },
 ];
 
-// Benavides (New - Reduced Area)
+// Benavides (New - Reduced Area but covering Miraflores/Barranco inland - Further reduced to avoid sea)
 const benavidesPoly = [
-    { lat: -12.110, lng: -77.025 }, // NW
+    { lat: -12.110, lng: -77.028 }, // NW (Slightly East to avoid sea edge)
     { lat: -12.110, lng: -77.000 }, // NE
     { lat: -12.125, lng: -76.980 }, // E
-    { lat: -12.130, lng: -76.975 }, // SE (Border pushed North)
-    { lat: -12.135, lng: -76.985 }, // S (Border pushed North)
+    { lat: -12.130, lng: -76.975 }, // SE
+    { lat: -12.135, lng: -76.985 }, // S
     { lat: -12.140, lng: -77.005 }, // S
-    { lat: -12.135, lng: -77.020 }, // SW
-    { lat: -12.120, lng: -77.022 }, // W
+    { lat: -12.150, lng: -77.018 }, // SW (Inland Barranco)
+    { lat: -12.135, lng: -77.030 }, // W (Inland Miraflores)
+    { lat: -12.120, lng: -77.028 }, // W
 ];
 
 // Atocongo (Standard - Expanded Area)
@@ -333,7 +334,7 @@ const locations: Location[] = [
     name: "Benavides",
     address: "Av. Benavides 3863, local 1, Santiago de Surco",
     phone: "996819390",
-    type: "new",
+    type: "standard",
     isOpen: false,
     schedule: [
       { days: "Lunes:", hours: "10:00 am - 09:00 pm" },
@@ -361,6 +362,9 @@ export default function CoberturaPage() {
   const mapRef = useRef<HTMLDivElement>(null)
   const googleMapRef = useRef<any | null>(null)
   const [polygons, setPolygons] = useState<any[]>([])
+  const searchMarkerRef = useRef<any | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const autocompleteRef = useRef<any | null>(null)
 
   useEffect(() => {
     setCurrentTime(new Date())
@@ -376,10 +380,8 @@ export default function CoberturaPage() {
     )
   }
 
-  const filteredLocations = locations.filter((loc) =>
-    loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    loc.address.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // Filter removed to show all locations regardless of search query
+  const filteredLocations = locations;
 
   const getStatusColor = (location: Location) => {
     if (location.type === 'remodeling') return "#9CA3AF" // Grey
@@ -447,6 +449,50 @@ export default function CoberturaPage() {
 
   }, [userLocation]) 
 
+  const handlePlaceSelect = () => {
+    if (!autocompleteRef.current || !googleMapRef.current) return;
+
+    const place = autocompleteRef.current.getPlace();
+
+    if (!place.geometry || !place.geometry.location) {
+        // User entered the name of a Place that was not suggested and
+        // pressed the Enter key, or the Place Details request failed.
+        // Fallback to search logic if needed, but Autocomplete usually handles this.
+        return;
+    }
+
+    const location = place.geometry.location;
+    const lat = location.lat();
+    const lng = location.lng();
+
+    // Update state
+    setSearchQuery(place.name || place.formatted_address || "");
+    setUserLocation({ lat, lng });
+
+    // Map operations
+    googleMapRef.current.setCenter(location);
+    googleMapRef.current.setZoom(14);
+
+    // Manage Marker
+    if (searchMarkerRef.current) {
+        searchMarkerRef.current.setMap(null);
+    }
+
+    searchMarkerRef.current = new window.google.maps.Marker({
+        map: googleMapRef.current,
+        position: location,
+        title: place.name,
+        icon: {
+            path: window.google.maps.SymbolPath.CIRCLE,
+            scale: 8,
+            fillColor: "#F59E0B", // Orange
+            fillOpacity: 1,
+            strokeColor: "white",
+            strokeWeight: 2,
+        }
+    });
+  }
+
   const initMap = () => {
     if (mapRef.current && !googleMapRef.current && window.google) {
       const map = new window.google.maps.Map(mapRef.current, {
@@ -469,6 +515,14 @@ export default function CoberturaPage() {
         ],
       })
       googleMapRef.current = map
+
+      // Initialize Autocomplete
+      if (inputRef.current) {
+          autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
+              fields: ["geometry", "name", "formatted_address"],
+          });
+          autocompleteRef.current.addListener("place_changed", handlePlaceSelect);
+      }
 
       locations.forEach((location) => {
         const svgString = getFlagSvgString(location.id);
@@ -533,6 +587,15 @@ export default function CoberturaPage() {
           googleMapRef.current.panTo({ lat: latitude, lng: longitude })
           googleMapRef.current.setZoom(12)
           
+          // Clear search marker if exists
+          if (searchMarkerRef.current) {
+              searchMarkerRef.current.setMap(null);
+              searchMarkerRef.current = null;
+          }
+          
+          // Use a separate marker for user location or reuse logic?
+          // The original code added a new marker every time. Let's clean that up too if we want.
+          // For now, stick to adding it, but typically you'd want one user location marker.
           new window.google.maps.Marker({
             position: { lat: latitude, lng: longitude },
             map: googleMapRef.current,
@@ -557,7 +620,22 @@ export default function CoberturaPage() {
   }
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && searchQuery) {
+    if (e.key === 'Enter') {
+        // If autocomplete didn't trigger (e.g. raw text), we can try manual geocoding
+        // or just let autocomplete handle it.
+        // Often it's better to rely on the Place Changed event if the user selected something.
+        // If they just typed and hit enter, the Autocomplete widget might not have fired.
+        // Let's keep the old manual geocode as a fallback.
+        
+        if (!searchQuery) return;
+        
+        // Trigger manual geocode if needed, but usually the Autocomplete is preferred.
+        // We'll leave the manual logic for when user types something not in the dropdown?
+        // Google Autocomplete usually forces a selection or returns the text.
+        
+        // Let's fallback to the previous geocoding logic if autocompleteRef didn't fire recently?
+        // Or just run it.
+        
         if (!window.google || !window.google.maps || !googleMapRef.current) return;
 
         const geocoder = new window.google.maps.Geocoder();
@@ -567,29 +645,27 @@ export default function CoberturaPage() {
                 const lat = location.lat();
                 const lng = location.lng();
 
-                // Set as user location for proximity logic
                 setUserLocation({ lat, lng });
-
-                // Center map
                 googleMapRef.current.setCenter(location);
                 googleMapRef.current.setZoom(14);
 
-                // Add marker for search result
-                new window.google.maps.Marker({
+                if (searchMarkerRef.current) {
+                    searchMarkerRef.current.setMap(null);
+                }
+
+                searchMarkerRef.current = new window.google.maps.Marker({
                     map: googleMapRef.current,
                     position: location,
                     title: searchQuery,
                     icon: {
                         path: window.google.maps.SymbolPath.CIRCLE,
                         scale: 8,
-                        fillColor: "#F59E0B", // Orange for search result
+                        fillColor: "#F59E0B",
                         fillOpacity: 1,
                         strokeColor: "white",
                         strokeWeight: 2,
                     }
                 });
-            } else {
-                alert('No se encontró la dirección en el mapa: ' + status);
             }
         });
     }
@@ -640,6 +716,7 @@ export default function CoberturaPage() {
             <div className="my-4 w-full relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
               <Input
+                ref={inputRef}
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -649,7 +726,13 @@ export default function CoberturaPage() {
               />
               {searchQuery && (
                 <button 
-                    onClick={() => setSearchQuery("")} 
+                    onClick={() => {
+                        setSearchQuery("");
+                        if (searchMarkerRef.current) {
+                            searchMarkerRef.current.setMap(null);
+                            searchMarkerRef.current = null;
+                        }
+                    }} 
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 cursor-pointer"
                 >
                     <X className="h-5 w-5" />
