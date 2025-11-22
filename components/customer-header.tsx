@@ -74,7 +74,7 @@ export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps =
               Carta
             </Link>
             <Link
-              href="#"
+              href="/cobertura"
               className={`transition text-[20px] font-display font-bold cursor-pointer ${
                 pathname === '/cobertura' ? 'text-[#e2e200] underline decoration-[#e2e200] underline-offset-4' : 'text-white hover:text-[#e2e200]'
               }`}
