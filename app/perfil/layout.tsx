@@ -50,7 +50,7 @@ export default function PerfilLayout({
          </div>
       </div>
 
-      <main className="flex-1 mt-6 pb-12 relative z-10">
+      <main className="flex-1 mt-6 pb-0 relative z-10">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-8">
             
@@ -61,7 +61,7 @@ export default function PerfilLayout({
 
             {/* Content Area */}
             <div className="flex-1">
-               <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden min-h-[600px]">
+               <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden h-full">
                   {children}
                </div>
             </div>
@@ -70,7 +70,7 @@ export default function PerfilLayout({
         </div>
       </main>
       
-      <CustomerFooter />
+      <CustomerFooter className="mt-8" />
     </div>
   )
 }

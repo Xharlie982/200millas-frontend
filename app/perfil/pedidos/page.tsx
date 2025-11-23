@@ -49,12 +49,8 @@ export default function MisPedidosPage() {
   const historyOrders = orders.filter((o: any) => o.status === 'completed' || o.status === 'cancelled' || o.status === 'delivered')
 
   return (
-    <div className="p-8">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold font-display text-[#1000a3]">Mis pedidos</h1>
-      </div>
-
-      <div className="max-w-4xl mx-auto">
+    <div className="p-4 md:p-6 min-h-[464px]">
+      <div className="w-full">
         <p className="text-gray-500 text-sm mb-8 text-center">Ten un espacio para visualizar tus compras realizadas y calificar tus experiencias</p>
 
         <Tabs defaultValue="proceso" className="w-full">

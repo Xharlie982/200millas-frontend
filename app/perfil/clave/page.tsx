@@ -20,19 +20,8 @@ export default function ClavePage() {
   if (isLoading) return null
 
   return (
-    <div className="p-8">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold font-display text-white mb-2">Contraseña</h1> 
-        {/* Note: Screenshot shows white text for title on dark header, but we are in white content area. 
-            However, user screenshot for "Contraseña" page shows "Contraseña" centered in white area.
-            Let's stick to the consistent style of other pages. 
-            Wait, the screenshot shows "Contraseña" in the blue header actually?
-            No, the screenshot `200millas.pe/perfil/clave` shows "Contraseña" in the white card area, centered.
-        */}
-        <h1 className="text-3xl font-bold font-display text-gray-800 text-center">Contraseña</h1>
-      </div>
-
-      <div className="max-w-2xl mx-auto">
+    <div className="p-4 md:p-6 min-h-[464px]">
+      <div className="w-full">
         <p className="text-gray-500 text-sm mb-6">Si requieres modificar tu contraseña, asegúrate de que sea segura.</p>
 
         <div className="flex flex-col md:flex-row gap-8 items-start">

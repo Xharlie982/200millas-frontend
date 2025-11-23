@@ -27,12 +27,7 @@ export default function BeneficiosPage() {
   const strokeDashoffset = circumference - (0 / 100) * circumference; // 0 progress for now
 
   return (
-    <div className="p-8">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold font-display text-[#1000a3] mb-2">Beneficios</h1>
-        <p className="text-gray-500">Conoce tus puntos generados por tus compras y en qué canjearlos.</p>
-      </div>
-
+    <div className="p-4 md:p-6 min-h-[464px]">
       <div className="flex flex-col md:flex-row gap-12 items-start">
         {/* Points Circle */}
         <div className="w-full md:w-1/3 flex flex-col items-center justify-center">

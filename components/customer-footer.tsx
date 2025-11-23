@@ -1,8 +1,10 @@
 "use client"
 
-export default function CustomerFooter() {
+import { cn } from "@/lib/utils"
+
+export default function CustomerFooter({ className }: { className?: string }) {
   return (
-    <footer className="bg-[#1000a3] text-white mt-16" style={{ padding: '25px 24px 16px' }}>
+    <footer className={cn("bg-[#1000a3] text-white mt-16", className)} style={{ padding: '25px 24px 16px' }}>
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-4">
           {/* Div Izquierdo - Enlaces */}

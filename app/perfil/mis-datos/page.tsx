@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Trash2, Info } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export default function MisDatosPage() {
   const { isAuthenticated, isLoading, user } = useAuth()
@@ -21,10 +22,10 @@ export default function MisDatosPage() {
   if (isLoading) return null
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-6">
       {/* Removed Header Section as requested */}
 
-      <div className="max-w-3xl mx-auto">
+      <div className="w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="space-y-2">
                 <Label className="text-xs text-gray-500 font-medium ml-1">Nombre</Label>
@@ -66,7 +67,14 @@ export default function MisDatosPage() {
                         placeholder="" 
                         className="h-11 bg-gray-50 border-gray-200 rounded-lg focus:bg-white transition-colors pr-10"
                     />
-                    <Info className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 cursor-help" />
+                    <Tooltip>
+                        <TooltipTrigger className="absolute right-3 top-1/2 -translate-y-1/2" type="button">
+                            <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Acumula puntos en todos los canales.</p>
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
             </div>
             <div className="space-y-2">
@@ -78,7 +86,14 @@ export default function MisDatosPage() {
                         type="date"
                         className="h-11 bg-gray-50 border-gray-200 rounded-lg focus:bg-white transition-colors pr-10"
                     />
-                    <Info className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 cursor-help" />
+                    <Tooltip>
+                        <TooltipTrigger className="absolute right-3 top-1/2 -translate-y-1/2" type="button">
+                            <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Adquiere ofertas exclusivas por tu día.</p>
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
             </div>
 

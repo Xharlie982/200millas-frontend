@@ -19,14 +19,8 @@ export default function ConfiguracionPage() {
   if (isLoading) return null
 
   return (
-    <div className="p-8">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold font-display text-white">Notificaciones</h1>
-        {/* Screenshot shows "Notificaciones" centered */}
-        <h1 className="text-3xl font-bold font-display text-gray-800 text-center">Notificaciones</h1>
-      </div>
-
-      <div className="max-w-3xl mx-auto">
+    <div className="p-4 md:p-6 min-h-[464px]">
+      <div className="w-full">
         <p className="text-gray-500 text-sm mb-6">Gestiona tus notificaciones de estado de pedidos y publicidad.</p>
 
         <div className="space-y-4">
