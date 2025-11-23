@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { ShoppingCart } from "lucide-react"
+import { ShoppingCart, User } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
 import { useAuth } from "@/lib/auth-context"
 import {
@@ -39,6 +39,20 @@ export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps =
     window.location.href = "/checkout"
   }
 
+  // Helper to check exactly active path for profile links
+  const isExactActive = (path: string) => {
+    return pathname === path;
+  }
+
+  // Check if any profile sub-path is active (excluding /perfil/beneficios which has its own link)
+  const isProfileActive = () => {
+    return pathname?.startsWith('/perfil') && pathname !== '/perfil/beneficios';
+  }
+
+  const linkStyle = (isActive: boolean) => `transition text-[20px] font-display font-bold cursor-pointer ${
+    isActive ? 'text-[#e2e200] underline decoration-[#e2e200] underline-offset-4' : 'text-white hover:text-[#e2e200]'
+  }`
+
   return (
     <header className="bg-[#1000a3] text-white shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-4">
@@ -57,30 +71,20 @@ export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps =
 
           {/* Navigation Links */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link
-              href="/"
-              className={`transition text-[20px] font-display font-bold cursor-pointer ${
-                pathname === '/' ? 'text-[#e2e200] underline decoration-[#e2e200] underline-offset-4' : 'text-white hover:text-[#e2e200]'
-              }`}
-            >
+            <Link href="/" className={linkStyle(isExactActive('/'))}>
               Inicio
             </Link>
-            <Link
-              href="/carta"
-              className={`transition text-[20px] font-display font-bold cursor-pointer ${
-                pathname === '/carta' ? 'text-[#e2e200] underline decoration-[#e2e200] underline-offset-4' : 'text-white hover:text-[#e2e200]'
-              }`}
-            >
+            <Link href="/carta" className={linkStyle(isExactActive('/carta'))}>
               Carta
             </Link>
-            <Link
-              href="/cobertura"
-              className={`transition text-[20px] font-display font-bold cursor-pointer ${
-                pathname === '/cobertura' ? 'text-[#e2e200] underline decoration-[#e2e200] underline-offset-4' : 'text-white hover:text-[#e2e200]'
-              }`}
-            >
+            <Link href="/cobertura" className={linkStyle(isExactActive('/cobertura'))}>
               Cobertura
             </Link>
+            {isAuthenticated && (
+                <Link href="/perfil/beneficios" className={linkStyle(isExactActive('/perfil/beneficios'))}>
+                  Beneficios
+                </Link>
+            )}
           </nav>
 
           {/* Right side actions */}
@@ -89,19 +93,12 @@ export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps =
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <Link
-                  href="/perfil"
-                  className="text-sm hover:text-[#e2e200] transition hidden md:block cursor-pointer"
+                  href="/perfil/mis-datos"
+                  className={`flex items-center gap-2 ${linkStyle(isProfileActive())}`}
                 >
-                  {user?.name || "Mi Perfil"}
+                  <User className="w-6 h-6 stroke-[2.5px]" />
+                  <span>{user?.name?.split(' ')[0] || "Mi Perfil"}</span>
                 </Link>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={logout}
-                  className="text-white hover:text-[#e2e200] hover:bg-[#1000a3]/90 cursor-pointer"
-                >
-                  Cerrar Sesión
-                </Button>
               </div>
             ) : (
               <Link href="/login" className="hidden md:flex items-center space-x-2 text-white hover:text-[#e2e200] transition text-[20px] font-display font-bold cursor-pointer">

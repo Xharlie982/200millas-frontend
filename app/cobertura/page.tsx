@@ -387,14 +387,14 @@ export default function CoberturaPage() {
     if (location.type === 'remodeling') return "#9CA3AF" // Grey
     if (location.type === 'new') return "#1000a3" // Blue
     
-    // Standard locations: check distance if user location is known
     if (userLocation) {
         const dist = calculateDistance(userLocation.lat, userLocation.lng, location.lat, location.lng)
         if (dist <= PROXIMITY_CLOSE_KM) return "#6BCB77" // Green (Very Close)
         if (dist <= PROXIMITY_MEDIUM_KM) return "#65DDB7" // Turquoise (Medium Close)
+        return "#D87272" // Red (Far but location known)
     }
     
-    return "#D87272" // Default Red
+    return "#87CEEB" // Celeste tenue (Default when no location selected)
   }
   
   const getPolygonColor = (location: Location) => {
