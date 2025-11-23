@@ -29,12 +29,7 @@ export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps =
   const iconSize = "h-7 w-7";
 
   const handleCheckout = () => {
-    if (!isAuthenticated) {
-      // Redirect to login if not authenticated
-      window.location.href = "/login"
-      return
-    }
-    // Open checkout modal or redirect to checkout page
+    // Allow guest checkout - redirect to checkout page directly
     closeCart()
     window.location.href = "/checkout"
   }

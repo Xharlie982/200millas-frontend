@@ -10,7 +10,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { auth, googleProvider } from "@/lib/firebase"
 import { signInWithPopup } from "firebase/auth"
-import CausaImg from "@/public/Causa200millas.png" // Import statically for blur placeholder
+import CausaImg from "@/public/Causa200millas.png"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -106,7 +106,7 @@ export default function LoginPage() {
         }
     } catch (error: any) {
         console.error("Google login error:", error)
-        if (error.code === 'auth/popup-closed-by-user') {
+        if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
             toast.info("Inicio de sesión cancelado")
         } else {
             toast.error("Error al conectar con Google.")
@@ -118,7 +118,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-[#1000a3]">
-      {/* Fondo Marino con Degradados y Olas Mejoradas */}
+      {/* Fondo Marino con Degradados y Olas Originales (Pre-Amaru) */}
       <div className="absolute inset-0 w-full h-full z-0">
          <div className="absolute inset-0 bg-gradient-to-b from-[#1000a3] to-[#060040]"></div>
          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] mix-blend-overlay"></div>

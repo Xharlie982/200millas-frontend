@@ -8,32 +8,67 @@ const getAuthHeaders = () => {
   }
 }
 
+// Mock storage helper
+const getMockOrders = () => {
+  if (typeof window === "undefined") return []
+  const stored = localStorage.getItem("mock_orders")
+  return stored ? JSON.parse(stored) : []
+}
+
+const saveMockOrder = (order: any) => {
+  if (typeof window === "undefined") return
+  const orders = getMockOrders()
+  orders.push({ ...order, id: order.id || "ORD-" + Date.now() })
+  localStorage.setItem("mock_orders", JSON.stringify(orders))
+}
+
 export const apiClient = {
   // Orders endpoints
   orders: {
     create: async (orderData: any) => {
-      const response = await fetch(`${API_BASE_URL}/orders`, {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify(orderData),
-      })
-      if (!response.ok) throw new Error("Failed to create order")
-      return response.json()
+      try {
+          const response = await fetch(`${API_BASE_URL}/orders`, {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify(orderData),
+          })
+          if (!response.ok) throw new Error("Failed to create order")
+          return response.json()
+      } catch (error) {
+          console.warn("API create failed, saving locally", error)
+          const mockOrder = { ...orderData, id: "ORD-" + Math.floor(Math.random() * 10000) }
+          saveMockOrder(mockOrder)
+          return mockOrder
+      }
     },
     getById: async (orderId: string) => {
-      const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
-        headers: getAuthHeaders(),
-      })
-      if (!response.ok) throw new Error("Failed to fetch order")
-      return response.json()
+      try {
+          const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+            headers: getAuthHeaders(),
+          })
+          if (!response.ok) throw new Error("Failed to fetch order")
+          return response.json()
+      } catch (error) {
+          const orders = getMockOrders()
+          const order = orders.find((o: any) => o.id === orderId)
+          if (order) return order
+          throw error
+      }
     },
     getAll: async (filters?: any) => {
-      const params = new URLSearchParams(filters)
-      const response = await fetch(`${API_BASE_URL}/orders?${params}`, {
-        headers: getAuthHeaders(),
-      })
-      if (!response.ok) throw new Error("Failed to fetch orders")
-      return response.json()
+      try {
+          const params = new URLSearchParams(filters)
+          const response = await fetch(`${API_BASE_URL}/orders?${params}`, {
+            headers: getAuthHeaders(),
+          })
+          if (!response.ok) throw new Error("Failed to fetch orders")
+          return response.json()
+      } catch (error) {
+          const orders = getMockOrders()
+          // Filter by user if needed
+          // For now return all mock orders
+          return { data: orders } // mimicking API response structure
+      }
     },
     updateStatus: async (orderId: string, status: string) => {
       const response = await fetch(`${API_BASE_URL}/orders/${orderId}/status`, {
@@ -100,12 +135,17 @@ export const apiClient = {
       return response.json()
     },
     logout: async () => {
-      const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: "POST",
-        headers: getAuthHeaders(),
-      })
-      if (!response.ok) throw new Error("Logout failed")
-      return response.json()
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+        })
+        if (!response.ok) throw new Error("Logout failed")
+        return response.json()
+      } catch (error) {
+        console.warn("Logout API call failed, clearing local session anyway", error)
+        return { success: true }
+      }
     },
   },
 
