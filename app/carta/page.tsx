@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ProductCard } from "@/components/product-card"
 import { Search, X } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { LoadingScreen } from "@/components/loading-screen"
 import { SimpleToast } from "@/components/ui/simple-toast"
 
 export default function CartaPage() {
@@ -3197,35 +3198,7 @@ export default function CartaPage() {
         </section>
 
         {/* Loading Screen */}
-        <div className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-500 ease-out ${loading ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-          <div className={`absolute inset-0 bg-white/80 backdrop-blur-sm transition-opacity duration-500 ease-out ${loading ? 'opacity-100' : 'opacity-0'}`}></div>
-          <div className="relative flex items-center space-x-6 animate-[float_6s_ease-in-out_infinite]">
-            <div className="relative">
-              <div className="absolute -inset-6 opacity-25">
-                <div className="w-40 h-40 rounded-full bg-[#1000a3] blur-3xl"></div>
-              </div>
-              <Image
-                src="/favicon.ico"
-                alt="200 Millas"
-                width={96}
-                height={96}
-                className="relative"
-                style={{
-                  filter: 'none',
-                  animation: 'pulse-scale-strong 1.6s ease-in-out infinite'
-                }}
-              />
-            </div>
-            <div className="flex items-baseline">
-              <span className="text-[#1000a3] font-display font-bold text-5xl">Cargando</span>
-              <span className="inline-flex space-x-1 ml-2">
-                <span className="text-[#1000a3] font-display font-bold text-5xl animate-[dot-bounce_1.2s_ease-in-out_infinite]">.</span>
-                <span className="text-[#1000a3] font-display font-bold text-5xl animate-[dot-bounce_1.2s_ease-in-out_infinite_0.2s]">.</span>
-                <span className="text-[#1000a3] font-display font-bold text-5xl animate-[dot-bounce_1.2s_ease-in-out_infinite_0.4s]">.</span>
-              </span>
-            </div>
-          </div>
-        </div>
+        {loading && <LoadingScreen transparent />}
 
         {/* Products */}
         <section className="pb-12">

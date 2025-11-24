@@ -1,18 +1,39 @@
+"use client"
+
 import { ProfileSidebar } from "@/components/profile-sidebar"
 import CustomerHeader from "@/components/customer-header"
 import CustomerFooter from "@/components/customer-footer"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
+// import { LoadingScreen } from "@/components/loading-screen" // Component preserved but not used here to avoid FOUC patchiness
+import { cn } from "@/lib/utils"
 
 export default function PerfilLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const { isLoading } = useAuth()
+  const pathname = usePathname()
+
+  const getLinkStyle = (path: string) => {
+    const isActive = pathname === path
+    return cn(
+      "whitespace-nowrap text-sm md:text-base transition-all",
+      isActive 
+        ? "text-white font-bold underline decoration-2 underline-offset-4" 
+        : "text-white/70 hover:text-white font-medium hover:underline decoration-2 underline-offset-4"
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[#F3F4F6] flex flex-col">
       <CustomerHeader />
       
+      {/* LoadingScreen removed to avoid covering the FOUC patchily. Components now handle isLoading internally. */}
+
       {/* Banner Background - Further Reduced Height to ~96px (h-24) */}
       <div className="h-24 bg-cover bg-center relative" style={{ backgroundImage: "url('/ceviches.png')" }}>
          {/* Overlay Gradiente */}
@@ -27,22 +48,22 @@ export default function PerfilLayout({
                 
                 {/* Centered Navigation */}
                 <div className="flex items-center gap-4 md:gap-8 overflow-x-auto max-w-full no-scrollbar pt-1">
-                   <Link href="/perfil/mis-datos" className="text-white/90 hover:text-white font-bold whitespace-nowrap text-sm md:text-base hover:underline decoration-2 underline-offset-4 transition-all">
+                   <Link href="/perfil/mis-datos" className={getLinkStyle("/perfil/mis-datos")}>
                       Mis datos
                    </Link>
-                   <Link href="/perfil/clave" className="text-white/70 hover:text-white font-medium whitespace-nowrap text-sm md:text-base hover:underline decoration-2 underline-offset-4 transition-all">
+                   <Link href="/perfil/clave" className={getLinkStyle("/perfil/clave")}>
                       Contraseña
                    </Link>
-                   <Link href="/perfil/direcciones" className="text-white/70 hover:text-white font-medium whitespace-nowrap text-sm md:text-base hover:underline decoration-2 underline-offset-4 transition-all">
+                   <Link href="/perfil/direcciones" className={getLinkStyle("/perfil/direcciones")}>
                       Direcciones
                    </Link>
-                   <Link href="/perfil/pedidos" className="text-white/70 hover:text-white font-medium whitespace-nowrap text-sm md:text-base hover:underline decoration-2 underline-offset-4 transition-all">
+                   <Link href="/perfil/pedidos" className={getLinkStyle("/perfil/pedidos")}>
                       Mis pedidos
                    </Link>
-                   <Link href="/perfil/beneficios" className="text-white/70 hover:text-white font-medium whitespace-nowrap text-sm md:text-base hover:underline decoration-2 underline-offset-4 transition-all">
+                   <Link href="/perfil/beneficios" className={getLinkStyle("/perfil/beneficios")}>
                       Beneficios
                    </Link>
-                   <Link href="/perfil/configuracion" className="text-white/70 hover:text-white font-medium whitespace-nowrap text-sm md:text-base hover:underline decoration-2 underline-offset-4 transition-all">
+                   <Link href="/perfil/configuracion" className={getLinkStyle("/perfil/configuracion")}>
                       Configuración
                    </Link>
                 </div>
@@ -60,8 +81,8 @@ export default function PerfilLayout({
             </div>
 
             {/* Content Area */}
-            <div className="flex-1">
-               <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden h-full">
+            <div className="flex-1 w-full">
+               <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden h-full w-full">
                   {children}
                </div>
             </div>

@@ -148,12 +148,19 @@
 @layer base {
   html {
     @apply overflow-x-hidden;
+    scrollbar-gutter: stable;
   }
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground overflow-x-hidden;
+  }
+  
+  /* Prevent Radix UI from causing layout shift while keeping scroll locked */
+  body[data-scroll-locked] {
+    margin-right: 0 !important;
+    padding-right: 0 !important;
   }
 }
 

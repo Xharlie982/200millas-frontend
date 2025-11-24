@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { ShoppingCart, User } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
 import { useAuth } from "@/lib/auth-context"
+import { useState, useEffect } from "react" // Import useEffect and useState
 import {
   Sheet,
   SheetContent,
@@ -24,9 +25,14 @@ interface CustomerHeaderProps {
 
 export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps = {}) {
   const { items, removeItem, updateQuantity, getTotal, getItemCount, isCartOpen, openCart, closeCart } = useCart()
-  const { isAuthenticated, user, logout } = useAuth()
+  const { isAuthenticated, user, logout, isLoading } = useAuth()
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false) // Add mounted state
   const iconSize = "h-7 w-7";
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleCheckout = () => {
     // Allow guest checkout - redirect to checkout page directly
@@ -41,7 +47,7 @@ export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps =
 
   // Check if any profile sub-path is active (excluding /perfil/beneficios which has its own link)
   const isProfileActive = () => {
-    return pathname?.startsWith('/perfil') && pathname !== '/perfil/beneficios';
+    return pathname === '/perfil/mis-datos';
   }
 
   const linkStyle = (isActive: boolean) => `transition text-[20px] font-display font-bold cursor-pointer ${
@@ -75,33 +81,42 @@ export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps =
             <Link href="/cobertura" className={linkStyle(isExactActive('/cobertura'))}>
               Cobertura
             </Link>
-            {isAuthenticated && (
-                <Link href="/perfil/beneficios" className={linkStyle(isExactActive('/perfil/beneficios'))}>
-                  Beneficios
-                </Link>
+            {/* Wait for auth loading to finish before deciding to show Beneficios link which depends on auth sometimes or just structure */}
+            {isLoading ? (
+                 <div className="h-[30px] w-[100px]"></div> 
+            ) : (
+                isAuthenticated && (
+                    <Link href="/perfil/beneficios" className={linkStyle(isExactActive('/perfil/beneficios'))}>
+                      Beneficios
+                    </Link>
+                )
             )}
           </nav>
 
           {/* Right side actions */}
           <div className="flex items-center space-x-8">
-            {/* User menu */}
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-4">
-                <Link
-                  href="/perfil/mis-datos"
-                  className={`flex items-center gap-2 ${linkStyle(isProfileActive())}`}
-                >
-                  <User className="w-6 h-6 stroke-[2.5px]" />
-                  <span>{user?.name?.split(' ')[0] || "Mi Perfil"}</span>
-                </Link>
-              </div>
+            {/* User menu - Handle Loading State cleanly */}
+            {isLoading ? (
+                 <div className="h-[30px] w-[120px]"></div> // Placeholder to prevent layout shift
             ) : (
-              <Link href="/login" className="hidden md:flex items-center space-x-2 text-white hover:text-[#e2e200] transition text-[20px] font-display font-bold cursor-pointer">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <span>Ingresar</span>
-              </Link>
+                isAuthenticated ? (
+                  <div className="flex items-center space-x-4">
+                    <Link
+                      href="/perfil/mis-datos"
+                      className={`flex items-center gap-2 ${linkStyle(isProfileActive())}`}
+                    >
+                      <User className="w-6 h-6 stroke-[2.5px]" />
+                      <span>{user?.name?.split(' ')[0] || "Mi Perfil"}</span>
+                    </Link>
+                  </div>
+                ) : (
+                  <Link href="/login" className="hidden md:flex items-center space-x-2 text-white hover:text-[#e2e200] transition text-[20px] font-display font-bold cursor-pointer">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span>Ingresar</span>
+                  </Link>
+                )
             )}
 
             {/* Cart button */}
@@ -112,13 +127,14 @@ export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps =
                   aria-label="Abrir carrito"
                   className="p-2 cursor-pointer"
                 >
-                  {getItemCount() === 0 ? (
-                    <ShoppingCart className={`${iconSize} text-white`} />
-                  ) : (
+                  {/* Only render count if mounted to prevent hydration mismatch */}
+                  {mounted && getItemCount() > 0 ? (
                     <div className="flex items-center gap-1 rounded-md bg-[#e2e200] px-2 py-1">
                       <ShoppingCart className={`${iconSize} text-[#1000a3]`} />
                       <span className="font-bold text-[#1000a3]">{getItemCount()}</span>
                     </div>
+                  ) : (
+                    <ShoppingCart className={`${iconSize} text-white`} />
                   )}
                 </button>
               </SheetTrigger>
