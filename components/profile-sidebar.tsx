@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
 import { User, Lock, MapPin, ShoppingBag, Trophy, Settings, Power } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogClose
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -21,9 +21,11 @@ export function ProfileSidebar() {
   const pathname = usePathname()
   const { user, logout, isLoading } = useAuth()
   const router = useRouter()
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false)
 
   const handleLogout = async () => {
     await logout()
+    setIsLogoutOpen(false)
     router.push("/login")
   }
 
@@ -40,9 +42,7 @@ export function ProfileSidebar() {
             {/* Olas SVG */}
             <div className="absolute bottom-0 left-0 w-full">
                 <svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto block" preserveAspectRatio="none">
-                    {/* Ola 1 - Azul más claro */}
                     <path fill="#004e92" fillOpacity="0.5" d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-                    {/* Ola 2 - Espuma / Celeste muy claro */}
                     <path fill="#4facfe" fillOpacity="0.3" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,250.7C960,235,1056,181,1152,170.7C1248,160,1344,192,1392,208L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
                 </svg>
             </div>
@@ -51,12 +51,9 @@ export function ProfileSidebar() {
         {/* CONTENIDO (Z-10 para estar encima de las olas) */}
         <div className="relative z-10 flex flex-col items-center w-full">
             
-            {/* AVATAR ESTILO DAISYUI (Tailwind Puro) */}
+            {/* AVATAR ESTILO DAISYUI */}
             <div className="mb-4">
                 <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white/20 shadow-xl bg-white flex items-center justify-center relative">
-                     {/* Render both but hide one via CSS to maintain structure if needed, or just simple conditional is fine for spans/divs. 
-                         To be super safe against hydration mismatch on attributes, simple conditional is usually fine unless structure differs significantly. 
-                         Here we just swap content inside the stable div container. */}
                      {isLoading ? (
                          <div className="w-full h-full bg-gray-100 animate-pulse" />
                      ) : (
@@ -67,7 +64,7 @@ export function ProfileSidebar() {
                 </div>
             </div>
 
-            {/* Text Content Area - Stable Container */}
+            {/* Text Content Area */}
             <div className="flex flex-col items-center w-full min-h-[60px] justify-center">
                 {isLoading ? (
                     <div className="w-full flex flex-col items-center space-y-2">
@@ -86,7 +83,7 @@ export function ProfileSidebar() {
                 )}
             </div>
 
-            {/* BADGES ESTILO DAISYUI - Stable Container */}
+            {/* BADGES */}
             <div className={cn("flex flex-wrap justify-center gap-2 mt-2 transition-opacity duration-300", isLoading ? "opacity-0" : "opacity-100")}>
                 <div className="px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide bg-[#e2e200] text-[#1000a3] shadow-md border border-yellow-400/50">
                     Miembro Nuevo
@@ -99,27 +96,25 @@ export function ProfileSidebar() {
       </div>
 
       <nav className="space-y-1">
-        <Dialog>
-          <DialogTrigger asChild>
-            <button
-              disabled={isLoading}
-              className={cn(
-                  "group flex items-center justify-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-all mt-4 shadow-sm duration-200",
-                  isLoading 
-                    ? "bg-white/10 cursor-not-allowed" 
-                    : "text-white bg-[#1000a3] hover:bg-red-600 cursor-pointer hover:shadow-md"
-              )}
-            >
-              {isLoading ? (
-                  <div className="h-5 w-24 bg-white/20 rounded animate-pulse" />
-              ) : (
-                  <div className="flex items-center gap-3">
-                    <Power className="h-5 w-5 text-white transition-colors" />
-                    <span className="font-semibold">Cerrar sesión</span>
-                  </div>
-              )}
-            </button>
-          </DialogTrigger>
+        {/* Button is separated from Dialog Trigger logic to prevent hydration mismatch */}
+        <button
+          disabled={isLoading}
+          onClick={() => !isLoading && setIsLogoutOpen(true)}
+          className={cn(
+              "group flex items-center justify-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-all mt-4 shadow-sm duration-200",
+              isLoading 
+                ? "opacity-50 cursor-not-allowed bg-[#1000a3] text-white" 
+                : "text-white bg-[#1000a3] hover:bg-red-600 cursor-pointer hover:shadow-md"
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <Power className="h-5 w-5 text-white transition-colors" />
+            <span className="font-semibold">Cerrar sesión</span>
+          </div>
+        </button>
+
+        {/* Dialog controlled by state, outside of the trigger flow */}
+        <Dialog open={isLogoutOpen} onOpenChange={setIsLogoutOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-center text-xl font-bold uppercase font-display">Confirmar</DialogTitle>

@@ -117,18 +117,19 @@ export default function MisDatosPage() {
     }
   }
 
-  if (isLoading || !mounted) {
-      return (
-          <div className="flex items-center justify-center h-[500px] w-full">
-              <Loader2 className="h-10 w-10 animate-spin text-[#1000a3]" />
-          </div>
-      )
-  }
+  const isPageLoading = isLoading || !mounted
 
   return (
     <TooltipProvider>
-      <div className="p-4 md:p-6">
-        <div className="w-full">
+      <div className="p-4 md:p-6 relative">
+        {/* Optional: Loading Overlay Spinner if desired, keeping form visible underneath */}
+        {isPageLoading && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50">
+                <Loader2 className="h-10 w-10 animate-spin text-[#1000a3]" />
+            </div>
+        )}
+
+        <div className={cn("w-full transition-opacity duration-300", isPageLoading ? "opacity-50 pointer-events-none select-none grayscale" : "opacity-100")}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="space-y-2">
                   <Label className="text-xs text-gray-500 font-medium ml-1">Nombre</Label>

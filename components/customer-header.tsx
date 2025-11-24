@@ -6,14 +6,14 @@ import { usePathname } from "next/navigation"
 import { ShoppingCart, User } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
 import { useAuth } from "@/lib/auth-context"
-import { useState, useEffect } from "react" // Import useEffect and useState
+import { useState, useEffect } from "react"
+import { cn } from "@/lib/utils"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import CartSidebar from "@/components/cart-sidebar"
@@ -27,7 +27,7 @@ export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps =
   const { items, removeItem, updateQuantity, getTotal, getItemCount, isCartOpen, openCart, closeCart } = useCart()
   const { isAuthenticated, user, logout, isLoading } = useAuth()
   const pathname = usePathname()
-  const [mounted, setMounted] = useState(false) // Add mounted state
+  const [mounted, setMounted] = useState(false)
   const iconSize = "h-7 w-7";
 
   useEffect(() => {
@@ -53,6 +53,8 @@ export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps =
   const linkStyle = (isActive: boolean) => `transition text-[20px] font-display font-bold cursor-pointer ${
     isActive ? 'text-[#e2e200] underline decoration-[#e2e200] underline-offset-4' : 'text-white hover:text-[#e2e200]'
   }`
+
+  const hasItems = mounted && getItemCount() > 0
 
   return (
     <header className="bg-[#1000a3] text-white shadow-lg sticky top-0 z-50">
@@ -81,7 +83,6 @@ export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps =
             <Link href="/cobertura" className={linkStyle(isExactActive('/cobertura'))}>
               Cobertura
             </Link>
-            {/* Wait for auth loading to finish before deciding to show Beneficios link which depends on auth sometimes or just structure */}
             {isLoading ? (
                  <div className="h-[30px] w-[100px]"></div> 
             ) : (
@@ -95,9 +96,9 @@ export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps =
 
           {/* Right side actions */}
           <div className="flex items-center space-x-8">
-            {/* User menu - Handle Loading State cleanly */}
+            {/* User menu */}
             {isLoading ? (
-                 <div className="h-[30px] w-[120px]"></div> // Placeholder to prevent layout shift
+                 <div className="h-[30px] w-[120px]"></div>
             ) : (
                 isAuthenticated ? (
                   <div className="flex items-center space-x-4">
@@ -119,27 +120,32 @@ export default function CustomerHeader({ onEditCartItem }: CustomerHeaderProps =
                 )
             )}
 
-            {/* Cart button */}
+            {/* Cart button - Refactored for stable structure and smooth transition */}
+            <button
+              type="button"
+              aria-label="Abrir carrito"
+              className={cn(
+                "flex items-center gap-1 rounded-md px-2 py-1 transition-all duration-300 cursor-pointer",
+                !mounted ? "bg-transparent opacity-50" : "",
+                hasItems ? "bg-[#e2e200] text-[#1000a3]" : "bg-transparent text-white hover:bg-white/10"
+              )}
+              onClick={openCart}
+            >
+              <ShoppingCart 
+                className={cn(
+                  iconSize, 
+                  hasItems ? "text-[#1000a3]" : "text-white"
+                )} 
+              />
+              {hasItems && (
+                <span className="font-bold text-[#1000a3]">{getItemCount()}</span>
+              )}
+            </button>
+
+            {/* Sheet Component - Detached from trigger to prevent ID mismatch */}
             <Sheet open={isCartOpen} onOpenChange={(open) => open ? openCart() : closeCart()}>
-              <SheetTrigger asChild>
-                <button
-                  type="button"
-                  aria-label="Abrir carrito"
-                  className="p-2 cursor-pointer"
-                >
-                  {/* Only render count if mounted to prevent hydration mismatch */}
-                  {mounted && getItemCount() > 0 ? (
-                    <div className="flex items-center gap-1 rounded-md bg-[#e2e200] px-2 py-1">
-                      <ShoppingCart className={`${iconSize} text-[#1000a3]`} />
-                      <span className="font-bold text-[#1000a3]">{getItemCount()}</span>
-                    </div>
-                  ) : (
-                    <ShoppingCart className={`${iconSize} text-white`} />
-                  )}
-                </button>
-              </SheetTrigger>
+              {/* No SheetTrigger here, controlled via context state */}
               <SheetContent side="right" className="w-full sm:w-[450px] p-0 gap-0 border-l-0 bg-white" hideClose>
-                {/* Título accesible requerido por Radix (oculto visualmente) */}
                 <SheetHeader className="sr-only">
                   <SheetTitle>Mi carrito</SheetTitle>
                   <SheetDescription>Resumen de productos en tu carrito</SheetDescription>
