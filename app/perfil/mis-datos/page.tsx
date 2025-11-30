@@ -15,6 +15,7 @@ import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { apiClient } from "@/lib/api"
 import {
   Dialog,
   DialogContent,
@@ -76,42 +77,47 @@ export default function MisDatosPage() {
 
   const handleSave = async () => {
     setIsSaving(true)
-    
-    // Construct updated user object
-    const updatedUser = {
-      ...user,
-      name: `${firstName} ${lastName}`.trim(),
-      phoneNumber: phone,
-      dni: dni,
-      birthDate: date ? date.toISOString() : undefined,
-      pronoun: pronoun
+    try {
+      const updatedData = {
+        name: `${firstName} ${lastName}`.trim(),
+        phoneNumber: phone,
+        dni: dni,
+        birthDate: date ? date.toISOString() : undefined,
+        pronoun: pronoun,
+      }
+
+      const response = await apiClient.profile.update(updatedData)
+      
+      // Update context and local storage with the response from the server
+      const updatedUser = response.user;
+      setUser(updatedUser)
+      localStorage.setItem("user", JSON.stringify(updatedUser))
+
+      toast.success("Datos actualizados correctamente", {
+        description: "Tu información ha sido guardada exitosamente."
+      })
+    } catch (error) {
+        toast.error("Error al actualizar", {
+            description: "No se pudo guardar la información. Por favor, inténtalo de nuevo."
+        })
+    } finally {
+        setIsSaving(false)
     }
-
-    // Update context and local storage
-    setUser(updatedUser)
-    localStorage.setItem("user", JSON.stringify(updatedUser))
-
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    setIsSaving(false)
-    toast.success("Datos actualizados correctamente", {
-      description: "Tu información ha sido guardada exitosamente."
-    })
   }
 
   const handleDeleteAccount = async () => {
     setIsDeleting(true)
     try {
-      // In a real app, call API to delete account here
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API
+      await apiClient.profile.delete()
       await logout()
       toast.success("Cuenta eliminada", {
         description: "Lamentamos verte partir. Tu cuenta ha sido eliminada."
       })
       router.push("/login")
     } catch (error) {
-      toast.error("Error al eliminar cuenta")
+      toast.error("Error al eliminar cuenta", {
+        description: "No se pudo eliminar tu cuenta. Inténtalo de nuevo."
+      })
     } finally {
       setIsDeleting(false)
     }

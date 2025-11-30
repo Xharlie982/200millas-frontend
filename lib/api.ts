@@ -149,6 +149,27 @@ export const apiClient = {
     },
   },
 
+  // User Profile endpoints
+  profile: {
+    update: async (userData: any) => {
+      const response = await fetch(`${API_BASE_URL}/users/me`, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(userData),
+      });
+      if (!response.ok) throw new Error("Failed to update user profile");
+      return response.json();
+    },
+    delete: async () => {
+      const response = await fetch(`${API_BASE_URL}/users/me`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) throw new Error("Failed to delete user account");
+      return response.json();
+    }
+  },
+
   // Dashboard endpoints
   dashboard: {
     getSummary: async () => {
