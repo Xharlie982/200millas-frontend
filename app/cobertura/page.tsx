@@ -696,7 +696,7 @@ export default function CoberturaPage() {
       <main className="flex-1 flex flex-col lg:flex-row relative overflow-hidden">
         {/* Sidebar (List) */}
         <div
-          className="w-full lg:w-[570px] flex flex-col bg-white border-r border-gray-200 z-10 shadow-xl lg:shadow-none h-full overflow-y-auto"
+          className="w-full lg:w-[570px] flex flex-col bg-white z-10 shadow-xl lg:shadow-none h-full overflow-y-auto no-scrollbar"
         >
           {/* Header Sidebar */}
           <div className="p-6 pb-2 bg-white shrink-0">
