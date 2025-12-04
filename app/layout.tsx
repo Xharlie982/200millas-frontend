@@ -5,6 +5,7 @@ import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/lib/auth-context"
 import { CartProvider } from "@/lib/cart-context"
+import { WebSocketProvider } from "@/lib/websocket-context"
 import { Toaster } from "sonner"
 import "./globals.css"
 
@@ -35,7 +36,9 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${roboto.variable} ${inter.variable} font-sans antialiased`}>
         <AuthProvider>
-          <CartProvider>{children}</CartProvider>
+          <WebSocketProvider>
+            <CartProvider>{children}</CartProvider>
+          </WebSocketProvider>
         </AuthProvider>
         <Toaster position="top-center" />
         <Analytics />

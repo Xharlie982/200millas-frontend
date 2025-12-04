@@ -46,6 +46,7 @@ export default function MisDatosPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true)
 
   // Form state
   const [firstName, setFirstName] = useState("")
@@ -57,48 +58,245 @@ export default function MisDatosPage() {
 
   useEffect(() => {
     setMounted(true)
-    if (!isLoading && !isAuthenticated) {
+    
+    // Solo redirigir si realmente no hay token (no solo si isAuthenticated es false)
+    const hasToken = typeof window !== "undefined" && localStorage.getItem("token")
+    if (!isLoading && !isAuthenticated && !hasToken) {
+      console.log("No token found, redirecting to login")
       redirect("/login")
+      return
     }
-    if (user) {
-      const currentUser = user as ExtendedUser
-      const names = user.name?.split(" ") || ["", ""]
-      setFirstName(names[0] || "")
-      setLastName(names.slice(1).join(" ") || "")
-      setPhone(user.phoneNumber || "")
-      setEmail(user.email || "")
-      
-      // Initialize extended fields if they exist
-      if (currentUser.dni) setDni(currentUser.dni)
-      if (currentUser.pronoun) setPronoun(currentUser.pronoun)
-      if (currentUser.birthDate) setDate(new Date(currentUser.birthDate))
+    
+    const loadProfile = async () => {
+      // Intentar cargar el perfil si hay token, incluso si isAuthenticated es false temporalmente
+      const hasToken = typeof window !== "undefined" && !!localStorage.getItem("token")
+      if (isAuthenticated || hasToken) {
+        setIsLoadingProfile(true)
+        try {
+          // Cargar perfil completo del backend
+          const profile = await apiClient.profile.get()
+          console.log("Profile loaded from backend:", profile)
+          
+          // Actualizar el usuario en el contexto con el perfil completo
+          const updatedUser = {
+            email: profile.email || user?.email,
+            name: profile.name || user?.name,
+            userType: profile.user_type || user?.userType,
+            tenantId: user?.tenantId || "200millas",
+            phone: profile.phone,
+            phoneNumber: profile.phone, // Compatibilidad
+            preferences: profile.preferences || {},
+          }
+          
+          setUser(updatedUser as any)
+          localStorage.setItem("user", JSON.stringify(updatedUser))
+          
+          // Cargar datos en el formulario
+          const names = profile.name?.split(" ") || ["", ""]
+          setFirstName(names[0] || "")
+          setLastName(names.slice(1).join(" ") || "")
+          setPhone(profile.phone || "")
+          setEmail(profile.email || "")
+          
+          // Cargar campos de preferences
+          if (profile.preferences) {
+            if (profile.preferences.dni) setDni(profile.preferences.dni)
+            if (profile.preferences.pronoun) setPronoun(profile.preferences.pronoun)
+            if (profile.preferences.birthDate) {
+              setDate(new Date(profile.preferences.birthDate))
+            }
+          }
+        } catch (error: any) {
+          // Manejar errores de forma más robusta
+          // Extraer el mensaje de error de múltiples formas posibles
+          let errorMessage = ""
+          try {
+            if (error?.message) {
+              errorMessage = String(error.message)
+            } else if (typeof error === 'string') {
+              errorMessage = error
+            } else if (error?.toString && typeof error.toString === 'function') {
+              errorMessage = error.toString()
+            } else if (error && typeof error === 'object') {
+              // Intentar extraer de diferentes propiedades
+              errorMessage = error.error || error.msg || error.text || JSON.stringify(error)
+            } else {
+              errorMessage = String(error) || "Error desconocido al cargar perfil"
+            }
+          } catch (e) {
+            errorMessage = "Error al procesar el error"
+          }
+          
+          // hasToken ya está definido en el scope de loadProfile (línea 72)
+          const errorDetails = {
+            message: errorMessage,
+            stack: error?.stack || "No stack trace available",
+            user: user?.email || "No user",
+            hasToken: hasToken,
+            errorType: error?.constructor?.name || typeof error,
+            rawError: error ? (typeof error === 'object' ? JSON.stringify(error, Object.getOwnPropertyNames(error)) : String(error)) : "No error object"
+          }
+          
+          console.error("Error loading profile:", error)
+          console.error("Error details:", errorDetails)
+          
+          // Solo limpiar sesión si el error es específicamente "Usuario no encontrado para email: ..."
+          // PERO solo si NO hay token válido (es decir, si el login no fue exitoso)
+          const isUserNotFoundError = errorMessage.includes("Usuario no encontrado") && 
+                                     errorMessage.includes("email:") &&
+                                     errorMessage.includes("@")
+          
+          // Solo limpiar sesión si el usuario no existe Y no hay token válido
+          // Si hay token, significa que el login fue exitoso, así que el usuario debería existir
+          // En este caso, puede ser un problema temporal - no limpiar la sesión
+          if (isUserNotFoundError && !hasToken) {
+            console.log("Usuario no encontrado en backend y no hay token - limpiando sesión...")
+            
+            // Limpiar sesión
+            localStorage.removeItem("user")
+            localStorage.removeItem("token")
+            setUser(null)
+            
+            // Redirigir al login después de un breve delay
+            setTimeout(() => {
+              window.location.href = "/login"
+            }, 1000)
+            
+            return
+          } else if (isUserNotFoundError && hasToken) {
+            // Si hay token pero el usuario no existe, puede ser un problema de sincronización
+            // O el usuario se registró en otra instancia
+            console.warn("Usuario no encontrado pero hay token válido - puede ser un problema temporal o el usuario no existe en esta instancia")
+            toast.warning("Usuario no encontrado", {
+              description: "El usuario no existe en esta instancia. Por favor, regístrate primero o contacta al administrador.",
+              duration: 5000
+            })
+            
+            // No limpiar la sesión automáticamente, pero mostrar un mensaje claro
+            // El usuario puede decidir si quiere cerrar sesión o registrarse
+          }
+          
+          // Para otros errores (red, timeout, 401, etc.), NO limpiar sesión
+          // Solo usar datos del usuario en el contexto si están disponibles
+          console.log("Error no crítico, usando datos del usuario en contexto")
+          if (user) {
+            const currentUser = user as ExtendedUser
+            const names = user.name?.split(" ") || ["", ""]
+            setFirstName(names[0] || "")
+            setLastName(names.slice(1).join(" ") || "")
+            setPhone(user.phone || user.phoneNumber || "")
+            setEmail(user.email || "")
+            
+            if (currentUser.preferences) {
+              if (currentUser.preferences.dni) setDni(currentUser.preferences.dni)
+              if (currentUser.preferences.pronoun) setPronoun(currentUser.preferences.pronoun)
+              if (currentUser.preferences.birthDate) {
+                setDate(new Date(currentUser.preferences.birthDate))
+              }
+            }
+          }
+        } finally {
+          setIsLoadingProfile(false)
+        }
+      } else {
+        setIsLoadingProfile(false)
+      }
     }
-  }, [isLoading, isAuthenticated, user])
+    
+    loadProfile()
+  }, [isLoading, isAuthenticated])
 
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      const updatedData = {
+      // El backend solo acepta: name, phone, address, preferences
+      // Mapear los campos del formulario a los que acepta el backend
+      const updatedData: any = {
         name: `${firstName} ${lastName}`.trim(),
-        phoneNumber: phone,
-        dni: dni,
-        birthDate: date ? date.toISOString() : undefined,
-        pronoun: pronoun,
+      }
+      
+      // Solo incluir phone si tiene valor
+      if (phone && phone.trim()) {
+        updatedData.phone = phone.trim()
+      }
+      
+      // Guardar campos adicionales en preferences (el backend los acepta)
+      const preferences: any = {}
+      if (dni && dni.trim()) {
+        preferences.dni = dni.trim()
+      }
+      if (date) {
+        preferences.birthDate = date.toISOString()
+      }
+      if (pronoun && pronoun.trim()) {
+        preferences.pronoun = pronoun.trim()
+      }
+      
+      if (Object.keys(preferences).length > 0) {
+        updatedData.preferences = preferences
       }
 
-      const response = await apiClient.profile.update(updatedData)
+      console.log("Updating profile with data:", updatedData)
       
-      // Update context and local storage with the response from the server
-      const updatedUser = response.user;
-      setUser(updatedUser)
+      const response = await apiClient.profile.update(updatedData)
+      console.log("Profile update response:", response)
+      
+      // El backend devuelve el perfil actualizado directamente
+      // o puede venir como { profile: {...} }
+      const updatedProfile = response.profile || response
+      console.log("Updated profile extracted:", updatedProfile)
+      
+      if (!updatedProfile) {
+        console.error("No profile in response:", response)
+        throw new Error("Respuesta inválida del servidor: no se recibió el perfil")
+      }
+      
+      // El perfil debe tener al menos email para ser válido
+      if (!updatedProfile.email) {
+        console.error("Profile missing email:", updatedProfile)
+        throw new Error("Respuesta inválida del servidor: el perfil no contiene email")
+      }
+      
+      // Actualizar el usuario en el contexto sin desloguear
+      // Mantener el mismo formato que el login
+      const updatedUser = {
+        email: updatedProfile.email,
+        name: updatedProfile.name || updatedData.name,
+        userType: updatedProfile.user_type || user?.userType,
+        tenantId: user?.tenantId || "200millas",
+        // Campos adicionales del perfil
+        phone: updatedProfile.phone,
+        phoneNumber: updatedProfile.phone, // Mantener compatibilidad
+        preferences: updatedProfile.preferences || preferences,
+      }
+      
+      // Actualizar contexto y localStorage
+      setUser(updatedUser as any)
       localStorage.setItem("user", JSON.stringify(updatedUser))
+      
+      // Actualizar los campos del formulario con los valores del servidor
+      const names = updatedProfile.name?.split(" ") || [updatedData.name, ""]
+      setFirstName(names[0] || "")
+      setLastName(names.slice(1).join(" ") || "")
+      setPhone(updatedProfile.phone || "")
+      
+      // Actualizar campos de preferences
+      if (updatedProfile.preferences) {
+        if (updatedProfile.preferences.dni) setDni(updatedProfile.preferences.dni)
+        if (updatedProfile.preferences.pronoun) setPronoun(updatedProfile.preferences.pronoun)
+        if (updatedProfile.preferences.birthDate) {
+          setDate(new Date(updatedProfile.preferences.birthDate))
+        }
+      }
 
       toast.success("Datos actualizados correctamente", {
         description: "Tu información ha sido guardada exitosamente."
       })
-    } catch (error) {
+    } catch (error: any) {
+        console.error("Error updating profile:", error)
+        const errorMessage = error?.message || "No se pudo guardar la información. Por favor, inténtalo de nuevo."
         toast.error("Error al actualizar", {
-            description: "No se pudo guardar la información. Por favor, inténtalo de nuevo."
+            description: errorMessage
         })
     } finally {
         setIsSaving(false)
@@ -123,7 +321,7 @@ export default function MisDatosPage() {
     }
   }
 
-  const isPageLoading = isLoading || !mounted
+  const isPageLoading = isLoading || !mounted || isLoadingProfile
 
   return (
     <TooltipProvider>

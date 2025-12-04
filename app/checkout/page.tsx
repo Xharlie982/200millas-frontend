@@ -13,20 +13,37 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import { Loader2 } from "lucide-react"
+import { Loader2, MapPin, Plus } from "lucide-react"
+import Link from "next/link"
+
+interface SavedAddress {
+  address_id: string
+  label: string
+  street: string
+  district: string
+  city: string
+  postal_code?: string
+  reference?: string
+  is_default: boolean
+}
 
 export default function CheckoutPage() {
   const router = useRouter()
   const { items, getTotal, clearCart } = useCart()
   const { isAuthenticated, user, isLoading } = useAuth()
   const [deliveryType, setDeliveryType] = useState<"delivery" | "pickup">("delivery")
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("")
+  const [useSavedAddress, setUseSavedAddress] = useState(true)
   const [address, setAddress] = useState("")
   const [addressDetails, setAddressDetails] = useState("")
   const [reference, setReference] = useState("")
   const [phone, setPhone] = useState("")
   const [notes, setNotes] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false)
 
   // Check auth status with useEffect to avoid render-time state updates
   useEffect(() => {
@@ -34,6 +51,51 @@ export default function CheckoutPage() {
       router.push("/login")
     }
   }, [isLoading, isAuthenticated, router])
+
+  // Load saved addresses
+  useEffect(() => {
+    if (isAuthenticated && deliveryType === "delivery") {
+      loadSavedAddresses()
+    }
+  }, [isAuthenticated, deliveryType])
+
+  // Update form when selected address changes
+  useEffect(() => {
+    if (selectedAddressId && useSavedAddress) {
+      const selectedAddress = savedAddresses.find((addr) => addr.address_id === selectedAddressId)
+      if (selectedAddress) {
+        setAddress(selectedAddress.street)
+        setAddressDetails("")
+        setReference(selectedAddress.reference || "")
+      }
+    }
+  }, [selectedAddressId, useSavedAddress, savedAddresses])
+
+  const loadSavedAddresses = async () => {
+    setIsLoadingAddresses(true)
+    try {
+      const data = await apiClient.addresses.getAll()
+      const addresses = Array.isArray(data) ? data : []
+      setSavedAddresses(addresses)
+      
+      // Select default address if exists
+      const defaultAddress = addresses.find((addr: SavedAddress) => addr.is_default)
+      if (defaultAddress) {
+        setSelectedAddressId(defaultAddress.address_id)
+        setUseSavedAddress(true)
+      } else if (addresses.length > 0) {
+        setSelectedAddressId(addresses[0].address_id)
+        setUseSavedAddress(true)
+      } else {
+        setUseSavedAddress(false)
+      }
+    } catch (error: any) {
+      console.error("Error loading addresses:", error)
+      setUseSavedAddress(false)
+    } finally {
+      setIsLoadingAddresses(false)
+    }
+  }
 
   // Return null or loader while redirecting/loading
   if (isLoading || !isAuthenticated) {
@@ -63,17 +125,43 @@ export default function CheckoutPage() {
         specialInstructions: item.specialInstructions,
       }))
 
-      // Create the order object
+      // Build delivery address
+      let deliveryAddress = ""
+      if (deliveryType === "delivery") {
+        if (useSavedAddress && selectedAddressId) {
+          const selectedAddress = savedAddresses.find((addr) => addr.address_id === selectedAddressId)
+          if (selectedAddress) {
+            deliveryAddress = `${selectedAddress.street}`
+            if (selectedAddress.reference) {
+              deliveryAddress += `, ${selectedAddress.reference}`
+            }
+            if (addressDetails) {
+              deliveryAddress += `, ${addressDetails}`
+            }
+            deliveryAddress += `, ${selectedAddress.district}, ${selectedAddress.city}`
+          } else {
+            deliveryAddress = `${address}${addressDetails ? `, ${addressDetails}` : ""}`
+          }
+        } else {
+          deliveryAddress = `${address}${addressDetails ? `, ${addressDetails}` : ""}`
+          if (reference) {
+            deliveryAddress += `, ${reference}`
+          }
+        }
+      } else {
+        deliveryAddress = "Retiro en local"
+      }
+
+      // Create the order object - formato que espera el backend
       const order = {
-        customerId: user?.id,
-        items: orderItems,
-        status: "pending",
-        totalPrice: total,
-        deliveryAddress: deliveryType === "delivery" ? `${address}${addressDetails ? `, ${addressDetails}` : ""}` : "",
-        deliveryType: deliveryType,
-        notes: notes,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        items: orderItems.map(item => ({
+          item_id: item.menuItemId || item.id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        delivery_address: deliveryAddress,
+        delivery_instructions: notes || ""
       }
 
       // Submit the order
@@ -159,37 +247,148 @@ export default function CheckoutPage() {
 
                 {deliveryType === "delivery" && (
                   <div className="mt-6 space-y-4">
-                    <div>
-                      <Label htmlFor="address">Dirección de entrega *</Label>
-                      <Input
-                        id="address"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        placeholder="Ej: Av. Principal 123"
-                        required
-                        className="mt-2"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="addressDetails">Detalles adicionales (opcional)</Label>
-                      <Input
-                        id="addressDetails"
-                        value={addressDetails}
-                        onChange={(e) => setAddressDetails(e.target.value)}
-                        placeholder="Ej: Piso 3, Dpto. 301"
-                        className="mt-2"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="reference">Referencia</Label>
-                      <Input
-                        id="reference"
-                        value={reference}
-                        onChange={(e) => setReference(e.target.value)}
-                        placeholder="Ej: Frente al parque"
-                        className="mt-2"
-                      />
-                    </div>
+                    {savedAddresses.length > 0 && (
+                      <div className="flex items-center space-x-2 mb-4">
+                        <input
+                          type="checkbox"
+                          id="useSavedAddress"
+                          checked={useSavedAddress}
+                          onChange={(e) => {
+                            setUseSavedAddress(e.target.checked)
+                            if (!e.target.checked) {
+                              setSelectedAddressId("")
+                              setAddress("")
+                              setAddressDetails("")
+                              setReference("")
+                            }
+                          }}
+                          className="w-4 h-4 text-[#1000a3] border-gray-300 rounded focus:ring-[#1000a3]"
+                        />
+                        <Label htmlFor="useSavedAddress" className="cursor-pointer">
+                          Usar dirección guardada
+                        </Label>
+                      </div>
+                    )}
+
+                    {useSavedAddress && savedAddresses.length > 0 ? (
+                      <div>
+                        <Label htmlFor="savedAddress">Seleccionar dirección *</Label>
+                        <Select
+                          value={selectedAddressId}
+                          onValueChange={setSelectedAddressId}
+                          required
+                        >
+                          <SelectTrigger className="mt-2">
+                            <SelectValue placeholder="Selecciona una dirección" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {savedAddresses.map((addr) => (
+                              <SelectItem key={addr.address_id} value={addr.address_id}>
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="w-4 h-4 text-[#1000a3]" />
+                                  <div>
+                                    <div className="font-medium">
+                                      {addr.label || "Dirección"}
+                                      {addr.is_default && (
+                                        <span className="ml-2 text-xs text-[#1000a3]">(Predeterminada)</span>
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      {addr.street}, {addr.district}, {addr.city}
+                                    </div>
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {selectedAddressId && (
+                          <div className="mt-2 p-3 bg-gray-50 rounded-lg text-sm">
+                            {(() => {
+                              const selected = savedAddresses.find((addr) => addr.address_id === selectedAddressId)
+                              return selected ? (
+                                <div>
+                                  <p className="font-medium">{selected.street}</p>
+                                  <p className="text-gray-600">
+                                    {selected.district}, {selected.city}
+                                    {selected.postal_code && ` - ${selected.postal_code}`}
+                                  </p>
+                                  {selected.reference && (
+                                    <p className="text-gray-500 italic mt-1">
+                                      Referencia: {selected.reference}
+                                    </p>
+                                  )}
+                                </div>
+                              ) : null
+                            })()}
+                          </div>
+                        )}
+                        <div className="mt-2">
+                          <Label htmlFor="addressDetails">Detalles adicionales (opcional)</Label>
+                          <Input
+                            id="addressDetails"
+                            value={addressDetails}
+                            onChange={(e) => setAddressDetails(e.target.value)}
+                            placeholder="Ej: Piso 3, Dpto. 301"
+                            className="mt-2"
+                          />
+                        </div>
+                        <div className="mt-4">
+                          <Link
+                            href="/perfil/direcciones"
+                            className="text-sm text-[#1000a3] hover:underline flex items-center gap-1"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Gestionar direcciones
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div>
+                          <Label htmlFor="address">Dirección de entrega *</Label>
+                          <Input
+                            id="address"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            placeholder="Ej: Av. Principal 123"
+                            required={!useSavedAddress}
+                            className="mt-2"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="addressDetails">Detalles adicionales (opcional)</Label>
+                          <Input
+                            id="addressDetails"
+                            value={addressDetails}
+                            onChange={(e) => setAddressDetails(e.target.value)}
+                            placeholder="Ej: Piso 3, Dpto. 301"
+                            className="mt-2"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="reference">Referencia</Label>
+                          <Input
+                            id="reference"
+                            value={reference}
+                            onChange={(e) => setReference(e.target.value)}
+                            placeholder="Ej: Frente al parque"
+                            className="mt-2"
+                          />
+                        </div>
+                        {savedAddresses.length > 0 && (
+                          <div className="mt-4">
+                            <Link
+                              href="/perfil/direcciones"
+                              className="text-sm text-[#1000a3] hover:underline flex items-center gap-1"
+                            >
+                              <MapPin className="w-4 h-4" />
+                              Usar dirección guardada
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 

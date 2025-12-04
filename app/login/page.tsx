@@ -10,6 +10,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { auth, googleProvider } from "@/lib/firebase"
 import { signInWithPopup } from "firebase/auth"
+import { apiClient } from "@/lib/api"
 import CausaImg from "@/public/Causa200millas.png"
 
 export default function LoginPage() {
@@ -24,24 +25,27 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!email || !password) {
+      toast.error("Por favor completa todos los campos")
+      return
+    }
+    
     setIsLoading(true)
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      const mockUser = {
-          id: "1",
-          name: "Carlos Alith",
-          email: email,
-          role: "customer",
-          tenantId: "200millas"
-      }
-      setUser(mockUser)
-      localStorage.setItem("user", JSON.stringify(mockUser))
-      
+      // Usar la función de login real del auth context que llama al backend
+      await login(email, password)
       toast.success("¡Bienvenido de nuevo!")
+      
+      // Esperar un momento para que el estado se actualice antes de redirigir
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       router.push("/")
-    } catch (error) {
-      toast.error("Error al iniciar sesión")
+    } catch (error: any) {
+      // Mostrar el mensaje de error del backend si está disponible
+      const errorMessage = error?.message || "Error al iniciar sesión"
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -49,21 +53,47 @@ export default function LoginPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!name || !email || !password || !confirmPassword) {
+      toast.error("Por favor completa todos los campos")
+      return
+    }
+    
     if (password !== confirmPassword) {
       toast.error("Las contraseñas no coinciden")
       return
     }
+    
+    if (password.length < 6) {
+      toast.error("La contraseña debe tener al menos 6 caracteres")
+      return
+    }
+    
     setIsLoading(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      toast.success("¡Cuenta creada exitosamente! Ahora puedes iniciar sesión.")
-      setShowRegister(false)
-      setEmail("")
-      setPassword("")
-      setName("")
-      setConfirmPassword("")
-    } catch (error) {
-      toast.error("Error al crear cuenta")
+      // Usar la función de registro real del API
+      await apiClient.auth.register(email, password, name, "customer")
+      toast.success("¡Cuenta creada exitosamente!")
+      
+      // Iniciar sesión automáticamente después del registro
+      try {
+        await login(email, password)
+        toast.success("¡Bienvenido!")
+        router.push("/")
+      } catch (loginError: any) {
+        // Si el login automático falla, mostrar mensaje pero no error
+        console.warn("Auto-login after registration failed:", loginError)
+        toast.info("Cuenta creada. Por favor inicia sesión manualmente.")
+        setShowRegister(false)
+        setEmail("")
+        setPassword("")
+        setName("")
+        setConfirmPassword("")
+      }
+    } catch (error: any) {
+      // Mostrar el mensaje de error del backend si está disponible
+      const errorMessage = error?.message || "Error al crear cuenta"
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }

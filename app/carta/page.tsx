@@ -36,15 +36,45 @@ export default function CartaPage() {
   }, [])
 
   useEffect(() => {
-    loadItems(selectedCategory)
-  }, [selectedCategory])
+    // Solo cargar items si las categorías están cargadas y son válidas
+    if (categories.length > 0 || error) {
+      loadItems(selectedCategory)
+    }
+  }, [selectedCategory, categories.length, error])
 
   const loadCategories = async () => {
     try {
       const data = await apiClient.menu.getCategories()
-      setCategories(data)
-      setError(null)
-    } catch (error) {
+      // Asegurar que data sea un array
+      // Si el backend devuelve { categories: [...] }, extraer el array
+      const categoriesArray = Array.isArray(data) 
+        ? data 
+        : (data?.categories && Array.isArray(data.categories) 
+            ? data.categories 
+            : [])
+      
+      if (categoriesArray.length > 0) {
+        // Verificar si las categorías del backend coinciden con las esperadas
+        const expectedCategoryNames = ["Promos Fast", "Express", "Promociones", "Sopas Power", "Bowls Del Tigre", "Leche de Tigre", "Ceviches"]
+        const backendHasExpectedCategories = categoriesArray.some(c => 
+          expectedCategoryNames.includes(c.name)
+        )
+        
+        if (!backendHasExpectedCategories) {
+          // El backend tiene categorías diferentes, usar las de ejemplo del frontend
+          console.log("Backend categories don't match, using mock categories")
+          throw new Error("Backend categories don't match frontend expectations")
+        }
+        
+        setCategories(categoriesArray)
+        setError(null)
+        return // Éxito, salir
+      } else {
+        throw new Error("No categories received")
+      }
+    } catch (error: any) {
+      // Cualquier error (red, CORS, etc.) -> usar datos mock
+      console.warn("Error loading categories from backend, using mock data:", error?.message || error)
       setError("No se pudo conectar con el servidor. Mostrando datos de ejemplo.")
       setCategories([
         { id: "1", name: "Promos Fast", description: "Promociones rápidas" },
@@ -69,11 +99,301 @@ export default function CartaPage() {
     }
   }
 
+  // Función para cargar items mock
+  const loadMockItems = (categoryId: string | null = null) => {
+    // Shared extras configuration used across many promos
+    const adicionalesOptions = [
+      { id: "adicional-1", name: "Yuquita Regular 4 Und", price: 4.9, image: "/YR4und.png" },
+      { id: "adicional-2", name: "Chicha Morada 12 Oz.", price: 4.9, image: "/CM12Oz.png" },
+      { id: "adicional-3", name: "Chicha Morada 16 Oz.", price: 5.9, image: "/CM16Oz.png" },
+      { id: "adicional-4", name: "Vaso Al Paso Leche de Tigre Pota c/yuquita", price: 12.9, image: "/VaPLdTPcy.png" },
+      { id: "adicional-5", name: "Canchita Adicional", price: 2.9, image: "/CA.png" },
+      { id: "adicional-6", name: "Yuquita Grande 7 Und", price: 7.9, image: "/YG7und.png" },
+      { id: "adicional-7", name: "Chicharrón Clásico Extremo", price: 12.9, image: "/CCE.png" },
+      { id: "adicional-8", name: "Chilcano Power c/Chicharron", price: 7.9, image: "/ChilcanoPowerconChicharron.png" },
+      { id: "adicional-9", name: "Causa 200 Millas", price: 9.9, image: "/Causa200millas.png" },
+      { id: "adicional-10", name: "Vaso Leche de Tigre Pescado Regular Adicional", price: 11.9, image: "/VLdTPRA.png" },
+      { id: "adicional-11", name: "Chilcano Power", price: 4.9, image: "/ChilcanoPower.png" },
+      { id: "adicional-12", name: "Vaso Al Paso Leche de Tigre Pota", price: 9.9, image: "/VaPLdTP.png" },
+      { id: "adicional-13", name: "Chicharrón Clásico Regular", price: 9.9, image: "/CCR.png" },
+      { id: "adicional-14", name: "Inka Kola Sabor Original 500 ml", price: 5.9, image: "/IK500ml.png" },
+      { id: "adicional-15", name: "Yuquitas Regular + Chicha 12 Oz", price: 7.9, image: "/YRplusC12Oz.png" },
+      { id: "adicional-16", name: "Coca Cola Sabor Original 500 ml", price: 5.9, image: "/CC500ml.png" },
+      { id: "adicional-17", name: "Chicharrón de Pescado Extremo", price: 10.9, image: "/ChicharrondePescadoExtremo.png" },
+      { id: "adicional-18", name: "Chicharrón de Pescado Regular", price: 7.9, image: "/ChicharrondePescadoRegular.png" },
+      { id: "adicional-19", name: "Vaso Leche de Tigre Pota Regular Adicional", price: 10.9, image: "/VLdTPoRA.png" },
+      { id: "adicional-20", name: "Chicha Morada 9 Oz.", price: 3.9, image: "/CM9Oz.png" },
+    ]
+
+    const mock: MenuItem[] = [
+      // Promos Fast (category: "1")
+      { id: "p1", name: "Promo Familiar Cevichero 4", description: "2 Ceviches clasicos + 1 Chicharron Pescado+ Arroz con mariscos + 2 porciones de yucas + 4 Chichas 12 Onz. Promocion solo valida por web y tamaño regular", price: 69.90, image: "/PF1.png", available: true, category: "1",
+      configuracionOpciones: [
+       {
+         id: 'elige-tu-bebida',
+         name: "Elige tu bebida",
+         type: 'checkbox',
+         required: true,
+         maxSelections: 4,
+         options: [
+         { id: 'chicha-morada-12oz', name: 'Chicha Morada 12 Oz.', price: 0, image: '/CM12Oz.png' },
+         { id: 'chicha-morada-16oz', name: 'Chicha Morada 16 Oz.', price: 1.00, image: '/CM16Oz.png' },
+         { id: 'chicha-morada-21oz', name: 'Chicha Morada 21 Oz.', price: 1.50, image: '/CM21Oz.png' },
+           { id: 'coca-cola-300ml', name: 'Coca Cola 300 ml', price: 1.50, image: '/CC300ml.png' },
+           { id: 'inca-kola-300ml', name: 'Inka Kola 300 ml', price: 1.50, image: '/IK300ml.png' },
+           { id: 'agua-san-luis-750ml', name: 'Agua San Luis 750 ml', price: 3.00, image: '/ASL750ml.png' },
+           { id: 'coca-cola-500ml', name: 'Coca Cola 500 ml', price: 3.00, image: '/CC500ml.png' },
+           { id: 'inka-kola-500ml', name: 'Inka Kola 500 ml', price: 3.00, image: '/IK500ml.png' }
+         ]
+       },
+       {
+         "id": "presentacion",
+         "name": "Elige tu presentación",
+         "type": "radio",
+         "required": true,
+         "options": [
+           { "id": "presentacion-1", "name": "Promo Familiar Cevichero", "price": 0, "image": "/PFC.png" }
+         ]
+       },
+       {
+         "id": "aji",
+         "name": "Elige tu nivel de ají",
+         "type": "radio",
+         "required": true,
+         "options": [
+           { "id": "aji-1", "name": "Con ají", "price": 0, "image": "/PicanteNormal.png" },
+           { "id": "aji-2", "name": "Sin ají", "price": 0, "image": "/SinAji.png" }
+         ]
+       },
+       {
+         "id": "adicionales",
+         "name": "¿Deseas agregar algo más a tu pedido?",
+         "type": "checkbox",
+         "required": false,
+         "options": adicionalesOptions,
+       }
+     ]
+    },
+      { id: "p2", name: "Promo familiar Marino 3", description: "1 Trio clasico+ 1 Duo Tradicional + Arroz con mariscos + 3 Chichas 12 Onz. Promocion solo valida por web y tamaño regular", price: 64.9, image: "/PFM3.png", available: true, category: "1",
+      configuracionOpciones: [
+        {
+          id: "bebidas-pfm3",
+          name: "Elige tu bebida",
+          type: "checkbox",
+          required: true,
+          maxSelections: 3,
+          options: [
+            { id: "agua-san-luis-750ml", name: "Agua San Luis 750 ml", price: 0, image: "/ASL750ml.png" },
+            { id: "chicha-morada-12oz", name: "Chicha Morada 12 Oz.", price: 0, image: "/CM12Oz.png" },
+            { id: "chicha-morada-16oz", name: "Chicha Morada 16 Oz.", price: 1.0, image: "/CM16Oz.png" },
+            { id: "coca-cola-300ml", name: "Coca Cola 300 ml", price: 1.5, image: "/CC300ml.png" },
+            { id: "inka-kola-300ml", name: "Inka Kola 300 ml", price: 1.5, image: "/IK300ml.png" },
+            { id: "chicha-morada-21oz", name: "Chicha Morada 21 Oz.", price: 2.0, image: "/CM21Oz.png" },
+            { id: "coca-cola-500ml", name: "Coca Cola 500 ml", price: 3.0, image: "/CC500ml.png" },
+            { id: "inka-kola-500ml", name: "Inka Kola 500 ml", price: 3.0, image: "/IK500ml.png" },
+          ],
+        },
+        {
+          id: "presentacion",
+          name: "Elige tu presentación",
+          type: "radio",
+          required: true,
+          options: [
+            { id: "presentacion-1", name: "Promo Familiar Marino", price: 0, image: "/PFM3.png" },
+          ],
+        },
+        {
+          id: "aji",
+          name: "Elige tu nivel de ají",
+          type: "radio",
+          required: true,
+          options: [
+            { id: "aji-1", name: "Con ají", price: 0, image: "/PicanteNormal.png" },
+            { id: "aji-2", name: "Sin ají", price: 0, image: "/SinAji.png" },
+          ],
+        },
+        {
+          id: "adicionales",
+          name: "¿Deseas agregar algo más a tu pedido?",
+          type: "checkbox",
+          required: false,
+          options: adicionalesOptions,
+        },
+      ]},
+      { id: "p3", name: "Promo Ronda Marina Mixta", description: "Ceviche de pescado + Chicharron de Pescado + Arroz con Mariscos + Chaufa de Mariscos + Causa + 2 Chichas de 12 Onz. Promocion valida solo en web. Imagenes referenciales.", price: 49.9, image: "/PRMM.png", available: true, category: "1",
+      configuracionOpciones: [
+        {
+          id: "bebidas-prmm",
+          name: "Elige tu bebida",
+          type: "checkbox",
+          required: true,
+          maxSelections: 2,
+          options: [
+            { id: "chicha-morada-12oz", name: "Chicha Morada 12 Oz.", price: 0, image: "/CM12Oz.png" },
+            { id: "chicha-morada-16oz", name: "Chicha Morada 16 Oz.", price: 1.0, image: "/CM16Oz.png" },
+            { id: "coca-cola-300ml", name: "Coca Cola 300 ml", price: 1.5, image: "/CC300ml.png" },
+            { id: "inka-kola-300ml", name: "Inka Kola 300 ml", price: 1.5, image: "/IK300ml.png" },
+            { id: "agua-san-luis-750ml", name: "Agua San Luis 750 ml", price: 3.0, image: "/ASL750ml.png" },
+            { id: "coca-cola-500ml", name: "Coca Cola 500 ml", price: 3.0, image: "/CC500ml.png" },
+            { id: "inka-kola-500ml", name: "Inka Kola 500 ml", price: 3.0, image: "/IK500ml.png" },
+          ],
+        },
+        {
+          id: "aji",
+          name: "Elige tu nivel de ají",
+          type: "radio",
+          required: true,
+          options: [
+            { id: "aji-1", name: "Con ají", price: 0, image: "/PicanteNormal.png" },
+            { id: "aji-2", name: "Sin ají", price: 0, image: "/SinAji.png" },
+          ],
+        },
+        {
+          id: "adicionales",
+          name: "¿Deseas agregar algo más a tu pedido?",
+          type: "checkbox",
+          required: false,
+          options: adicionalesOptions,
+        },
+      ]},
+      { id: "p4", name: "Promo Megamarino Power", description: "Chicharron de pescado, pota y langostinos + Chaufa de mariscos + Papas fritas + 2 chilcanos. Promocion solo valida en la web.", price: 39.9, image: "/PMP.png", available: true, category: "1",
+      configuracionOpciones: [
+        {
+          id: "aji",
+          name: "Elige tu nivel de ají",
+          type: "radio",
+          required: true,
+          options: [
+            { id: "aji-1", name: "Con ají", price: 0, image: "/PicanteNormal.png" },
+            { id: "aji-2", name: "Sin ají", price: 0, image: "/SinAji.png" },
+          ],
+        },
+        {
+          id: "adicionales",
+          name: "¿Deseas agregar algo más a tu pedido?",
+          type: "checkbox",
+          required: false,
+          options: adicionalesOptions,
+        },
+      ]},
+      { id: "p5", name: "Promo Duo Clasico", description: "Ceviche de Pescado + Chicharron de Pota. Promocion solo valida por web y tamaño regular", price: 21.9, image: "/PDC.png", available: true, category: "1",
+      configuracionOpciones: [
+        {
+          id: "presentacion",
+          name: "Elige tu presentación",
+          type: "radio",
+          required: true,
+          options: [
+            { id: "presentacion-1", name: "Duo Clasico", price: 0, image: "/PDC.png" },
+          ],
+        },
+        {
+          id: "aji",
+          name: "Elige tu nivel de ají",
+          type: "radio",
+          required: true,
+          options: [
+            { id: "aji-1", name: "Con ají", price: 0, image: "/PicanteNormal.png" },
+            { id: "aji-2", name: "Sin ají", price: 0, image: "/SinAji.png" },
+          ],
+        },
+        {
+          id: "adicionales",
+          name: "¿Deseas agregar algo más a tu pedido?",
+          type: "checkbox",
+          required: false,
+          options: adicionalesOptions,
+        },
+      ]},
+      { id: "p6", name: "Promo Trio Clasico", description: "Ceviche de Pescado + Arroz con Mariscos + Chicharron de Pota. Promocion solo valida por web y tamaño regular. Imagen referencial", price: 23.9, image: "/PTC.png", available: true, category: "1",
+      configuracionOpciones: [
+        {
+          id: "presentacion",
+          name: "Elige tu presentación",
+          type: "radio",
+          required: true,
+          options: [
+            { id: "presentacion-1", name: "Trio Clasico", price: 0, image: "/PTC.png" },
+          ],
+        },
+        {
+          id: "aji",
+          name: "Elige tu nivel de ají",
+          type: "radio",
+          required: true,
+          options: [
+            { id: "aji-1", name: "Con ají", price: 0, image: "/PicanteNormal.png" },
+            { id: "aji-2", name: "Sin ají", price: 0, image: "/SinAji.png" },
+          ],
+        },
+        {
+          id: "adicionales",
+          name: "¿Deseas agregar algo más a tu pedido?",
+          type: "checkbox",
+          required: false,
+          options: adicionalesOptions,
+        },
+      ]},
+    ]
+    
+    // Filtrar por categoría si está seleccionada
+    let filteredMock = mock
+    if (categoryId) {
+      filteredMock = mock.filter(item => item.category === categoryId)
+    }
+    
+    setItems(filteredMock)
+    setError(null)
+  }
+
   const loadItems = async (categoryId: string | null) => {
+    // Si hay error (categorías del backend no coinciden), usar datos mock directamente
+    if (error) {
+      console.log("Using mock items due to category mismatch")
+      loadMockItems(categoryId)
+      return
+    }
+    
     try {
-      const data = await apiClient.menu.getItems({ categoryId })
-      setItems(data)
-    } catch (error) {
+      const data = await apiClient.menu.getItems(categoryId || undefined)
+      // Asegurar que data sea un array
+      const itemsArray = Array.isArray(data) 
+        ? data 
+        : (data?.items && Array.isArray(data.items) 
+            ? data.items 
+            : [])
+      
+      // Si no hay items del backend o son muy pocos, usar datos mock
+      if (itemsArray.length === 0) {
+        console.log("No items from backend, using mock items")
+        throw new Error("No items received from backend")
+      }
+      
+      // Transformar items del backend al formato del frontend
+      const transformedItems: MenuItem[] = itemsArray.map((item: any) => {
+        // Mapear item_id a id, y category del backend al ID de categoría del frontend
+        const categoryName = categories.find(c => c.id === item.category)?.name
+        const frontendCategoryId = categoryName 
+          ? categories.find(c => c.name === categoryName)?.id 
+          : item.category
+        
+        return {
+          id: item.item_id || item.id,
+          name: item.name,
+          description: item.description || '',
+          price: typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0,
+          category: frontendCategoryId || item.category,
+          image: item.image_url || item.image || '',
+          available: item.available !== false,
+          configuracionOpciones: item.configuracionOpciones || item.options || undefined
+        }
+      })
+      
+      setItems(transformedItems)
+      setError(null)
+    } catch (error: any) {
+      // Cualquier error (red, CORS, etc.) -> usar datos mock
+      console.warn("Error loading items from backend, using mock data:", error?.message || error)
       // Shared extras configuration used across many promos
       const adicionalesOptions = [
         { id: "adicional-1", name: "Yuquita Regular 4 Und", price: 4.9, image: "/YR4und.png" },
@@ -3001,6 +3321,7 @@ export default function CartaPage() {
         ]},
       ]
       setItems(mock) // Always load all mock items, filtering happens in the component
+      setError(null)
     }
   }
 
@@ -3070,11 +3391,18 @@ export default function CartaPage() {
   ]
 
   const getCategoryIdByName = (name: string) => {
-    const found = categories.find(c => c.name === name)
+    // Asegurar que categories sea un array antes de usar find
+    if (!Array.isArray(categories)) {
+      console.warn("categories is not an array:", categories)
+      return undefined
+    }
+    const found = categories.find(c => c && c.name === name)
     return found?.id
   }
 
-  const activeCategoryName = selectedCategory ? categories.find(c => c.id === selectedCategory)?.name || "" : "Mostrar todo"
+  const activeCategoryName = selectedCategory && Array.isArray(categories) 
+    ? categories.find(c => c && c.id === selectedCategory)?.name || "" 
+    : "Mostrar todo"
 
   // Two fixed rows: first 8 chips ("Mostrar todo" to "Ceviches"), then remaining 9
   const firstRow = orderedCategoryNames.slice(0, 8)

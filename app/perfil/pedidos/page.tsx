@@ -25,28 +25,47 @@ export default function MisPedidosPage() {
       const fetchOrders = async () => {
           if (isAuthenticated) {
               try {
-                  const res = await apiClient.orders.getAll({ customerId: user?.id })
-                  // Handle mock response structure { data: [...] } or direct array
-                  const ordersData = res.data || (Array.isArray(res) ? res : [])
-                  // Filter orders for current user if mock returns all
-                  const userOrders = ordersData.filter((o: any) => o.customerId === user?.id)
-                  setOrders(userOrders)
-              } catch (error) {
-                  console.error("Error fetching orders:", error)
-                  toast.error("Error al cargar pedidos")
+                  // El backend ya filtra por customer_id automáticamente usando el token
+                  const ordersData = await apiClient.orders.getAll()
+                  console.log("Orders received:", ordersData)
+                  
+                  // Asegurar que sea un array
+                  const ordersArray = Array.isArray(ordersData) ? ordersData : []
+                  setOrders(ordersArray)
+              } catch (error: any) {
+                  // Si es un error de red (CORS, conexión, etc.), mostrar mensaje amigable
+                  console.warn("Error fetching orders:", error?.message || error)
+                  // No mostrar toast de error si es un problema de red, solo loguear
+                  if (error?.message?.includes('Network error') || error?.message?.includes('Failed to fetch')) {
+                      console.log("Backend no disponible, mostrando lista vacía")
+                      setOrders([])
+                  } else {
+                      console.error("Error al cargar pedidos:", error)
+                      toast.error("Error al cargar pedidos: " + (error?.message || "Error desconocido"))
+                  }
               } finally {
                   setLoadingOrders(false)
               }
           }
       }
       fetchOrders()
-  }, [isAuthenticated, user?.id])
+  }, [isAuthenticated])
 
 
   if (isLoading) return null
 
-  const activeOrders = orders.filter((o: any) => o.status === 'pending' || o.status === 'processing')
-  const historyOrders = orders.filter((o: any) => o.status === 'completed' || o.status === 'cancelled' || o.status === 'delivered')
+  // Filtrar pedidos según estado del backend
+  // Estados activos: pending, confirmed, cooking, packing, ready, in_delivery, dispatched
+  const activeOrders = orders.filter((o: any) => {
+    const status = o.status || o.order_status
+    return ['pending', 'confirmed', 'cooking', 'packing', 'ready', 'in_delivery', 'dispatched'].includes(status)
+  })
+  
+  // Estados completados: delivered, cancelled, failed
+  const historyOrders = orders.filter((o: any) => {
+    const status = o.status || o.order_status
+    return ['delivered', 'completed', 'cancelled', 'failed'].includes(status)
+  })
 
   return (
     <div className="p-4 md:p-6 min-h-[464px]">
@@ -78,20 +97,36 @@ export default function MisPedidosPage() {
                     </div>
                 ) : activeOrders.length > 0 ? (
                     <div className="space-y-4">
-                        {activeOrders.map((order) => (
-                            <div key={order.id} className="border border-gray-200 rounded-xl p-6 flex justify-between items-center bg-white shadow-sm">
-                                <div>
-                                    <p className="font-bold text-[#1000a3]">Pedido #{order.id}</p>
-                                    <p className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleDateString()} - {order.items.length} productos</p>
-                                    <p className="font-semibold mt-1">Total: S/. {order.totalPrice?.toFixed(2)}</p>
+                        {activeOrders.map((order) => {
+                            const orderId = order.order_id || order.id
+                            const createdAt = order.created_at || order.createdAt
+                            const items = order.items || []
+                            const total = order.total || order.totalPrice || 0
+                            const status = order.status || order.order_status || 'pending'
+                            
+                            return (
+                                <div key={orderId} className="border border-gray-200 rounded-xl p-6 flex justify-between items-center bg-white shadow-sm">
+                                    <div>
+                                        <p className="font-bold text-[#1000a3]">Pedido #{orderId}</p>
+                                        <p className="text-sm text-gray-500">
+                                            {createdAt ? new Date(createdAt * 1000).toLocaleDateString() : 'Fecha no disponible'} - {items.length} productos
+                                        </p>
+                                        <p className="font-semibold mt-1">Total: S/. {typeof total === 'number' ? total.toFixed(2) : total}</p>
+                                    </div>
+                                    <div>
+                                        <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-medium capitalize">
+                                            {status === 'pending' ? 'Pendiente' : 
+                                             status === 'confirmed' ? 'Confirmado' :
+                                             status === 'cooking' ? 'Cocinando' :
+                                             status === 'packing' ? 'Empacando' :
+                                             status === 'ready' ? 'Listo' :
+                                             status === 'in_delivery' ? 'En entrega' :
+                                             status === 'dispatched' ? 'Despachado' : status}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-medium capitalize">
-                                        {order.status === 'pending' ? 'Pendiente' : order.status}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 ) : (
                     <div className="border border-dashed border-gray-200 rounded-xl p-12 text-center">
@@ -112,20 +147,33 @@ export default function MisPedidosPage() {
                     </div>
                 ) : historyOrders.length > 0 ? (
                     <div className="space-y-4">
-                        {historyOrders.map((order) => (
-                            <div key={order.id} className="border border-gray-200 rounded-xl p-6 flex justify-between items-center bg-white shadow-sm">
-                                <div>
-                                    <p className="font-bold text-[#1000a3]">Pedido #{order.id}</p>
-                                    <p className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleDateString()} - {order.items.length} productos</p>
-                                    <p className="font-semibold mt-1">Total: S/. {order.totalPrice?.toFixed(2)}</p>
+                        {historyOrders.map((order) => {
+                            const orderId = order.order_id || order.id
+                            const createdAt = order.created_at || order.createdAt
+                            const items = order.items || []
+                            const total = order.total || order.totalPrice || 0
+                            const status = order.status || order.order_status || 'delivered'
+                            
+                            return (
+                                <div key={orderId} className="border border-gray-200 rounded-xl p-6 flex justify-between items-center bg-white shadow-sm">
+                                    <div>
+                                        <p className="font-bold text-[#1000a3]">Pedido #{orderId}</p>
+                                        <p className="text-sm text-gray-500">
+                                            {createdAt ? new Date(createdAt * 1000).toLocaleDateString() : 'Fecha no disponible'} - {items.length} productos
+                                        </p>
+                                        <p className="font-semibold mt-1">Total: S/. {typeof total === 'number' ? total.toFixed(2) : total}</p>
+                                    </div>
+                                    <div>
+                                        <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium capitalize">
+                                            {status === 'delivered' ? 'Entregado' :
+                                             status === 'completed' ? 'Completado' :
+                                             status === 'cancelled' ? 'Cancelado' :
+                                             status === 'failed' ? 'Fallido' : status}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium capitalize">
-                                        {order.status}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 ) : (
                     <div className="border border-dashed border-gray-200 rounded-xl p-12 text-center">
