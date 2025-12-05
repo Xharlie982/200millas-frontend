@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://glsnif507b.execute-api.us-east-1.amazonaws.com/dev"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://updlffnjjb.execute-api.us-east-1.amazonaws.com/dev"
 
 const getAuthHeaders = () => {
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null

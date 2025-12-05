@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useRef, useState, useCallback } from "react"
 
-const WEBSOCKET_URL = process.env.NEXT_PUBLIC_WEBSOCKET_URL || "wss://itsla0jmr8.execute-api.us-east-1.amazonaws.com/dev"
+const WEBSOCKET_URL = process.env.NEXT_PUBLIC_WEBSOCKET_URL || "wss://hxr842r7zb.execute-api.us-east-1.amazonaws.com/dev"
 
 export interface WebSocketMessage {
   type: string
